@@ -145,7 +145,8 @@ def create_log_dirs():
     app_dirs = {
         'patients': ['views', 'models'],
         'appointments': ['views', 'models'],
-        'controller': ['crud'],
+        'controller': ['crud', 'views'],
+        'reports': ['views'],
     }
     
     for app, modules in app_dirs.items():
@@ -293,9 +294,7 @@ USE_TZ = True
 STATIC_URL = '/static/'
 MEDIA_URL = '/images/'
 
-STATICFILES_DIRS = [
-    BASE_DIR / 'staticfiles',
-    ]
+STATICFILES_DIRS = []
 
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 MEDIA_ROOT = BASE_DIR /'images'
