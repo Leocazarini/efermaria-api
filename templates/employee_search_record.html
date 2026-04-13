@@ -1,0 +1,23 @@
+{% extends "search_employee.html" %}
+{% load static %}
+
+
+
+
+{% block extra_scripts %}
+<script src="{% static 'assets/js/records-form.js' %}"></script>
+{% endblock %}
+
+
+{% block form_action %}
+
+{% url 'employee_record' %}
+
+{% endblock %}
+
+{% block form_fields %}
+{% endblock %}
+
+
+
+

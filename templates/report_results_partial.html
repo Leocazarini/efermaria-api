@@ -1,0 +1,134 @@
+<div class="row">
+    <div class="col-lg-12 grid-margin stretch-card">
+        <div class="card">
+            <div class="card-body">
+                <h4 class="card-title">
+                    Relatório de Atendimentos:
+                    {% if page_obj %}
+                        {{ paginator.count }}
+                    {% else %}
+                        0
+                    {% endif %}
+                </h4>
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Data</th>
+                                
+                                <th>Nome</th>
+                                <th>Turma/Departamento</th>
+                                <th>Aula Atual</th> 
+                                <th>Idade</th>
+                                <th>Gênero</th>
+                                <th>Motivo</th>
+                                <th>Tratamento</th>
+                                <th>Observações</th>
+                                <th>Reavalição</th>
+                                <th>Contato com Pais</th>                               
+                                <th>Enfermaria</th>
+                                <th>Enfermeira</th>
+                                <th>Paciente</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for appointment in page_obj.object_list %}
+                            <tr>
+                                <td>{{ appointment.date|date:"d/m/Y H:i" }}</td>                                
+                                <td>{{ appointment.name }}</td>
+                                <td>{{ appointment.additional_info }}</td>
+                                <td>{{ appointment.current_class }}</td> 
+                                <td>{{ appointment.age }}</td>
+                                <td>{{ appointment.gender }}</td>
+                                <td>{{ appointment.reason }}</td>
+                                <td>{{ appointment.treatment }}</td>
+                                <td>{{ appointment.notes }}</td>
+                                <td>{% if appointment.revaluation %}
+                                    Sim
+                                {% else %}
+                                    Não
+                                {% endif %}</td>
+                                <td>{% if appointment.contact_parents %}
+                                    Sim
+                                {% else %}
+                                    Não
+                                {% endif %}</td>                               
+                                <td>{{ appointment.infirmary }}</td>
+                                <td>{{ appointment.nurse }}</td>
+                                <td>{{ appointment.type }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="12">Nenhum atendimento encontrado.</td> 
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Controles de Paginação -->
+            {% if page_obj.has_other_pages %}
+            <nav aria-label="Page navigation">
+                <ul class="pagination justify-content-center">
+                    {% if page_obj.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link page-btn" href="#" data-page="1" aria-label="Primeira">
+                                <span aria-hidden="true">Primeira</span>
+                            </a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link page-btn" href="#" data-page="{{ page_obj.previous_page_number }}" aria-label="Anterior">
+                                <span aria-hidden="true">&laquo;</span>
+                            </a>
+                        </li>
+                    {% else %}
+                        <li class="page-item disabled">
+                            <span class="page-link">Primeira</span>
+                        </li>
+                        <li class="page-item disabled">
+                            <span class="page-link">&laquo;</span>
+                        </li>
+                    {% endif %}
+
+                    {% for num in page_obj.paginator.page_range %}
+                        {% if num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                            {% if page_obj.number == num %}
+                                <li class="page-item active">
+                                    <span class="page-link">{{ num }}</span>
+                                </li>
+                            {% else %}
+                                <li class="page-item">
+                                    <a class="page-link page-btn" href="#" data-page="{{ num }}">{{ num }}</a>
+                                </li>
+                            {% endif %}
+                        {% endif %}
+                    {% endfor %}
+
+                    {% if page_obj.has_next %}
+                        <li class="page-item">
+                            <a class="page-link page-btn" href="#" data-page="{{ page_obj.next_page_number }}" aria-label="Próximo">
+                                <span aria-hidden="true">&raquo;</span>
+                            </a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link page-btn" href="#" data-page="{{ page_obj.paginator.num_pages }}" aria-label="Última">
+                                <span aria-hidden="true">Última</span>
+                            </a>
+                        </li>
+                    {% else %}
+                        <li class="page-item disabled">
+                            <span class="page-link">&raquo;</span>
+                        </li>
+                        <li class="page-item disabled">
+                            <span class="page-link">Última</span>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
+
+
+            </div>    
+        </div>
+    </div>
+</div>

@@ -1,0 +1,123 @@
+{% extends "base.html" %}
+
+{% load static %}
+
+{% block content %}
+
+<div class="row">
+    <div class="col-lg-3 grid-margin stretch-card">
+        <div class="card">
+            <div class="card-body">
+                <h4 class="card-title">Colaborador</h4>
+                <img src="{% static 'assets/images/faces/employees/' %}{{ employee.registry }}.png"
+                               class="mb-" width="235" height="220" alt="Foto do colaborador">
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-9 grid-margin stretch-card">
+        <div class="card">
+            <div class="card-body">
+                <h4 class="card-title">Informações do Colaborador</h4>
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                          <tr>                           
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr>
+                            <th>Nome</th>
+                            <td>{{ employee.name }}</td>
+
+                            <th>Departamento</th>
+                            <td>{{ employee.department_name }}</td>   
+                        </tr>
+                        <tr>
+                            <th>Nº do Crachá</th>
+                            <td>{{ employee.registry }}</td>
+                            
+                            <th>Data de nascimento</th>
+                            <td>{{ employee.birth_date|date:"d/m/Y" }}</td>
+
+                        </tr>
+                        <tr>
+                            <th>Idade</th>
+                            <td>{{ employee.age }}</td>
+                            <th>Gênero</th>
+                            <td>{{ employee.gender }}</td>         
+                        </tr>
+                       
+                    
+                        </tbody>
+                      </table>
+                     
+                      <hr>
+                      <h4 class="card-title mt-3 ml-2">Alergias</h4>
+                      <p class="ml-2">{{ employee.info.allergies }}</p>
+                  
+                      
+                  </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="row">
+    <div class="col-lg-12 grid-margin stretch-card">
+        <div class="card">
+            <div class="card-body">
+                <h4 class="card-title">
+                    Atendimentos do paciente: 
+                    {% if appointment %}
+                        {{ appointment|length }} <!-- Exibe o número total de atendimentos -->
+                    {% else %}
+                        0
+                    {% endif %}
+                </h4>
+                <div class="table-responsive">                   
+                    <table class="table">
+                        <thead>
+                        <tr>
+                            <th>Enfermaria</th>
+                            <th>Enfermeira</th>
+                            <th>Data</th>
+                            <th>Ocorrência</th>
+                            <th>Procedimentos</th>
+                            <th>Observações</th>
+                            <th>Reavaliação</th>
+                            
+                        </tr>
+                        </thead>
+                        <tbody>
+                            {% for appointment in appointment %}
+                            <tr>
+                                <td>{{ appointment.infirmary }}</td>
+                                <td>{{ appointment.nurse }}</td>
+                                <td>{{ appointment.date|date:"d/m/Y - H:i" }}</td>
+                                <td>{{ appointment.reason }}</td>
+                                <td>{{ appointment.treatment }}</td>
+                                <td>{{ appointment.notes }}</td>
+                                <td>{% if appointment.revaluation %}
+                                    Sim
+                                {% else %}
+                                    Não
+                                {% endif %}</td>
+
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="9">Nenhum atendimento encontrado.</td>
+                            </tr>
+                            {% endfor %}
+                        
+                        </tbody>
+                    </table>
+                </div>
+            </div>    
+        </div>
+    </div>
+</div>
+</div>
+
+
+
+{% endblock %}

@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+
+{% load static %}
+
+{% block title %}Relatórios - Enfermaria Escolar{% endblock %}
+
+{% block content %}
+<div class="col-12 grid-margin stretch-card">
+    <div class="card">
+        <div class="card-body">
+            <h4 class="card-title">Relatórios</h4>
+            <p class="card-description mb-3">
+                Selecione o período em que deseja extrair o relatório
+            </p>
+
+            <!-- Contêiner para mensagens de erro -->
+            <div id="error-message-container"></div>
+
+            <form class="form" id="report-form">
+                {% csrf_token %}
+                <div class="form-row align-items-center mb-4">
+                    <div class="col-auto">
+                        <label class="mr-2" for="search-date-begin">Início</label>
+                        <input type="date" class="form-control mb-2" id="search-date-begin" name="date_begin">
+                    </div>
+
+                    <div class="col-auto">
+                        <label class="mr-2" for="search-date-end">Fim</label>
+                        <input type="date" class="form-control mb-2" id="search-date-end" name="date_end">
+                    </div>
+
+                    <div class="col-auto mt-4">
+                        <button type="submit" class="btn btn-primary mb-2" id="report-search">Pesquisar</button>
+                    </div>
+                </div>
+
+                <div class="col-4 form-group mb-2">
+                    <p class="card-description mt-3">
+                        Se deseja buscar por um termo específico, digite abaixo:
+                    </p>
+                    <input type="text" class="form-control" id="search-term" name="search_term" placeholder="Digite um termo de busca" value="{{ search_term }}">
+                </div>
+
+                <!-- Checkboxes das enfermarias -->
+                <div class="row">
+                    <div class="col-12">
+                        <p class="card-description mt-3">
+                            Selecione as enfermarias que deseja extrair o relatório
+                        </p>
+                        <div class="d-flex flex-wrap">
+                            <div class="form-check form-check-inline ml-3">
+                                <label class="form-check-label">
+                                    <input type="checkbox" class="form-check-input" name="infirmaries" id="infantil" value="Infantil" checked> Infantil
+                                </label>
+                            </div>
+                            <div class="form-check form-check-inline ml-3">
+                                <label class="form-check-label">
+                                    <input type="checkbox" class="form-check-input" name="infirmaries" id="fundamental" value="Fundamental" checked> Fundamental
+                                </label>
+                            </div>
+                            <div class="form-check form-check-inline ml-3">
+                                <label class="form-check-label">
+                                    <input type="checkbox" class="form-check-input" name="infirmaries" id="ensino_medio" value="Ensino Médio" checked> Ensino Médio
+                                </label>
+                            </div>
+                            <div class="form-check form-check-inline ml-3">
+                                <label class="form-check-label">
+                                    <input type="checkbox" class="form-check-input" name="infirmaries" id="atendimento_externo" value="Atendimento Externo" checked> Atendimento Externo
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+
+                
+
+            </form>
+
+            <!-- Div para exibir os resultados -->
+            <div id="report-results-container"></div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+
+
+{% block extra_scripts %}
+
+
+<script src="{% static 'assets/js/reports.js' %}?v=1.0"></script>
+
+{% endblock %}

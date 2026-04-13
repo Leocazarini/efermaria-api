@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+
+{% load static %}
+
+{% block title %}Atendimento - Enfermaria Escolar{% endblock %}
+
+{% block content %}
+<div class="row">
+  <div class="col-lg-6 grid-margin stretch-card">
+    <div class="card">
+      <div class="card-body">
+        <h4 class="card-title">Informações do Colaborador</h4>
+        <div class="table-responsive">
+          <table class="table">
+            <thead>
+              <th>
+                <form class="forms-sample">
+                  <div class="form-group">
+                    <div class="row">
+                      <label for="allergies">Alergias:</label>
+                      <textarea class="form-control mb-3" id="allergies" rows="3">{{ employee.info.allergies }}</textarea> 
+                      <label for="employee-notes">Observações do Colaborador:</label>
+                      <textarea class="form-control" id="employee-notes" rows="8">{{ employee.info.patient_notes }}</textarea>
+                    </div>
+                  </div>
+                </form>
+              </th>
+              <th>
+                <img src="{% static 'assets/images/faces/employees/' %}{{ employee.registry }}.png" class="mb-5" width="235" height="250" alt="">
+              </th>
+            </thead>
+            <tbody>
+              <tr style="display: none;"><th>ID</th><td id="employee-id">{{ employee.id }}</td></tr>
+              <tr><th>Nome</th><td>{{ employee.name }}</td></tr>
+              <tr><th>Função</th><td>{{ employee.position }}</td></tr>
+              <tr><th>Nº do Crachá</th><td>{{ employee.registry }}</td></tr>
+              <tr><th>Idade</th><td>{{ employee.age }}</td></tr>
+              <tr><th>Data de nascimento</th><td>{{ employee.birth_date|date:"d/m/Y"   }}</td></tr>
+              <tr><th>Gênero</th><td>{{ employee.gender }}</td></tr>
+              <tr><th>Departamento</th><td>{{ employee.department_name }}</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="row mt-3 mt-5">
+          <div class="col-md-12 ml-2">
+              <a href="{% url 'employee_record' %}?registry={{ employee.registry }}" class="btn btn-primary">Ver Prontuário</a>
+          </div>
+      </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-6 grid-margin stretch-card">
+    <div class="card">
+      <div class="card-body">
+        <h4 class="card-title">Atendimento</h4>
+        <p class="card-description">Informações do atendimento</p>
+        <form class="forms-sample" action="#" method="POST">
+          {% csrf_token %}
+          <div class="form-group">
+            <label for="reason">Ocorrência:</label>
+            <textarea class="form-control" id="reason" rows="4"></textarea>
+          </div>
+          <div class="form-group">
+            <label for="treatment">Procedimentos:</label>
+            <textarea class="form-control" id="treatment" rows="4"></textarea>
+          </div>
+          <div class="form-group">
+            <label for="notes">Observações:</label>
+            <textarea class="form-control" id="notes" rows="4"></textarea>
+          </div>
+          <div class="form-check form-check-flat form-check-primary">
+            <label class="form-check-label">
+              <input type="checkbox" class="form-check-input" id="revaluation"> Reavaliação
+            </label>
+          </div>
+          <div class="row">
+            <div class="col-md-7">
+              <div class="form-group row">
+                <label class="col-sm-4 col-form-label">Enfermeira:</label>
+                <div class="col-sm-9">
+                  <input id="userFirstName" name="userFirstName" type="text" class="form-control" readonly />
+                </div>
+              </div>
+            </div>
+            <div class="col-md-7">
+              <div class="form-group row">
+                <label class="col-sm-4 col-form-label">Enfermaria:</label>
+                <div class="col-sm-9">
+                  <input id="selectedInfirmary" type="text" class="form-control" readonly />
+                </div>
+              </div>
+            </div>
+          </div>
+          <button id="employee-submit-button" type="submit" class="btn btn-primary mr-2">Salvar</button>
+          <a href="{% url 'index' %}" class="btn btn-light">Cancelar</a>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<!-- Scripts específicos para esta página -->
+<script src="{% static 'assets/js/form-submit-employee.js' %}"></script>
+
+{% endblock %}
