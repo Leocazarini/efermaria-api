@@ -66,23 +66,16 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
 
-    # Authentication apps
-
-    'allauth',
-    'allauth.account',
-    'allauth.socialaccount',
-
-    # Providers
-    'allauth.socialaccount.providers.google',
+    # REST Framework
+    'rest_framework',
 
     # Project apps
+    'authentication.apps.AuthenticationConfig',
     'appointments.apps.AppointmentsConfig',
     'controller.apps.ControllerConfig',
     'patients.apps.PatientsConfig',
     'reports.apps.ReportsConfig',
 ]
-
-SITE_ID = 1
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -92,9 +85,26 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-
-    "allauth.account.middleware.AccountMiddleware",
 ]
+
+# Django REST Framework + JWT
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ),
+    'DEFAULT_PERMISSION_CLASSES': (
+        'rest_framework.permissions.IsAuthenticated',
+    ),
+}
+
+from datetime import timedelta
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(hours=8),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
+    'ROTATE_REFRESH_TOKENS': True,
+    'BLACKLIST_AFTER_ROTATION': False,
+    'AUTH_HEADER_TYPES': ('Bearer',),
+}
 
 ROOT_URLCONF = 'setup.urls'
 
@@ -245,13 +255,8 @@ LOGGING = {
 
 
 AUTHENTICATION_BACKENDS = [
-    
-    # Needed to login by username in Django admin, regardless of `allauth`
     'django.contrib.auth.backends.ModelBackend',
-
-    # `allauth` specific authentication methods, such as login by email
-    'allauth.account.auth_backends.AuthenticationBackend',  
-    ]
+]
 
 
 AUTH_PASSWORD_VALIDATORS = [
@@ -303,33 +308,6 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
 
-# Allauth settings
-
-ACCOUNT_EMAIL_VERIFICATION = 'none'
-SOCIALACCOUNT_ONLY = True
-
+# Auth redirect (Django admin)
 LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/'
-
-
-SOCIALACCOUNT_PROVIDERS = {
-    "google": {
-        
-        "APPS": [
-            {
-                "client_id": os.getenv('GOOGLE_CLIENT_ID', ''),
-                "secret": os.getenv('GOOGLE_SECRET', ''),
-                "key": ""
-            },
-        ],
-        # These are provider-specific settings that can only be
-        # listed here:
-        "SCOPE": [
-            "profile",
-            "email",
-        ],
-        "AUTH_PARAMS": {
-            "access_type": "online",
-        },
-    }
-}
