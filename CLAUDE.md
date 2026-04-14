@@ -130,7 +130,7 @@ Ao refatorar `patients`, `appointments` e `reports`, cada um deve ter:
 - [x] `Dockerfile` e `docker-compose.yml` criados
 - [x] `pytest` e `pytest-django` configurados
 - [x] `djangorestframework` e `djangorestframework-simplejwt` instalados
-- [ ] `README.md` atualizado para portfólio
+- [x] `README.md` atualizado para portfólio
 
 ### Fase 2 — TDD e Camada de Serviços (PRÓXIMA)
 - [ ] Escrever testes vermelhos em `patients/tests/test_services.py`
