@@ -1,7 +1,7 @@
 import os
 import logging
 from pathlib import Path
-from dotenv import load_dotenv
+from dotenv import load_dotenv, dotenv_values
 
 
 """
@@ -44,8 +44,10 @@ LOGS_DIR = BASE_DIR / 'logs'
 # Load environment variables
 load_dotenv()
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', 'django-insecure-key-for-dev-only')
+# dotenv_values() re-parseia o .env com strip correto de aspas e tratamento de #,
+# necessário porque o Docker env_file interpreta # como comentário dentro de valores.
+_dotenv = dotenv_values()
+SECRET_KEY = _dotenv.get('DJANGO_SECRET_KEY') or os.getenv('DJANGO_SECRET_KEY', 'django-insecure-key-for-dev-only')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv('DJANGO_DEBUG', 'False') == 'True'
