@@ -71,6 +71,9 @@ INSTALLED_APPS = [
     # REST Framework
     'rest_framework',
 
+    # CORS
+    'corsheaders',
+
     # Swagger
     'drf_spectacular',
 
@@ -82,6 +85,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -90,6 +94,12 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+
+# CORS — origens permitidas para o frontend React (Fase 4)
+CORS_ALLOWED_ORIGINS = os.getenv(
+    'CORS_ALLOWED_ORIGINS',
+    'http://localhost:3000,http://127.0.0.1:3000',
+).split(',')
 
 # Django REST Framework + JWT
 REST_FRAMEWORK = {
