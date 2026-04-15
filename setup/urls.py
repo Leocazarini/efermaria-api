@@ -16,6 +16,7 @@ urlpatterns = [
     path('api/v1/patients/', include('patients.urls')),
     path('api/v1/appointments/', include('appointments.urls')),
     path('api/v1/reports/', include('reports.urls')),
+    path('api/v1/imports/', include('imports.urls')),
 
     # OpenAPI schema + Swagger / ReDoc
     path('api/schema/', SpectacularAPIView.as_view(), name='schema'),

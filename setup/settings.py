@@ -82,6 +82,7 @@ INSTALLED_APPS = [
     'appointments.apps.AppointmentsConfig',
     'patients.apps.PatientsConfig',
     'reports.apps.ReportsConfig',
+    'imports.apps.ImportsConfig',
 ]
 
 MIDDLEWARE = [
@@ -164,7 +165,7 @@ DATABASES = {
 }
 
 def create_log_dirs():
-    app_dirs = ['patients', 'appointments', 'reports']
+    app_dirs = ['patients', 'appointments', 'reports', 'imports']
     for app in app_dirs:
         dir_path = LOGS_DIR / app
         if not dir_path.exists():
@@ -218,6 +219,18 @@ LOGGING = {
             'filename': LOGS_DIR / 'reports' / 'views.log',
             'formatter': 'verbose',
         },
+        'imports_services_file': {
+            'level': 'DEBUG',
+            'class': 'logging.FileHandler',
+            'filename': LOGS_DIR / 'imports' / 'services.log',
+            'formatter': 'verbose',
+        },
+        'imports_api_views_file': {
+            'level': 'DEBUG',
+            'class': 'logging.FileHandler',
+            'filename': LOGS_DIR / 'imports' / 'api_views.log',
+            'formatter': 'verbose',
+        },
     },
     'loggers': {
         # Loggers app patients
@@ -234,6 +247,16 @@ LOGGING = {
         },
         'reports.views': {
             'handlers': ['reports_views_file'],
+            'level': 'DEBUG',
+            'propagate': False,
+        },
+        'imports.services': {
+            'handlers': ['imports_services_file'],
+            'level': 'DEBUG',
+            'propagate': False,
+        },
+        'imports.api_views': {
+            'handlers': ['imports_api_views_file'],
             'level': 'DEBUG',
             'propagate': False,
         },

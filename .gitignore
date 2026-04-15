@@ -177,11 +177,8 @@ cython_debug/
 # Implementation plan
 CLAUDE.md
 STATUS.md
+dev_api.md
 
-
-# Documents
-
-.docs/
 
 # PyCharm
 #  JetBrains specific template is maintained in a separate JetBrains.gitignore that can
