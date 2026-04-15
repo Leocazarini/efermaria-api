@@ -71,10 +71,12 @@ INSTALLED_APPS = [
     # REST Framework
     'rest_framework',
 
+    # Swagger
+    'drf_spectacular',
+
     # Project apps
     'authentication.apps.AuthenticationConfig',
     'appointments.apps.AppointmentsConfig',
-    'controller.apps.ControllerConfig',
     'patients.apps.PatientsConfig',
     'reports.apps.ReportsConfig',
 ]
@@ -97,6 +99,14 @@ REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': (
         'rest_framework.permissions.IsAuthenticated',
     ),
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+}
+
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'School Infirmary API',
+    'DESCRIPTION': 'API REST para gestão de atendimentos da enfermaria escolar.',
+    'VERSION': '1.0.0',
+    'SERVE_INCLUDE_SCHEMA': False,
 }
 
 from datetime import timedelta
@@ -144,18 +154,11 @@ DATABASES = {
 }
 
 def create_log_dirs():
-    app_dirs = {
-        'patients': ['views', 'models'],
-        'appointments': ['views', 'models'],
-        'controller': ['crud', 'views'],
-        'reports': ['views'],
-    }
-    
-    for app, modules in app_dirs.items():
-        for module in modules:
-            dir_path = LOGS_DIR / app
-            if not dir_path.exists():
-                os.makedirs(dir_path)
+    app_dirs = ['patients', 'appointments', 'reports']
+    for app in app_dirs:
+        dir_path = LOGS_DIR / app
+        if not dir_path.exists():
+            os.makedirs(dir_path)
 
 # Crie os diretórios antes de configurar o logging
 create_log_dirs()
@@ -199,19 +202,6 @@ LOGGING = {
             'filename': LOGS_DIR / 'appointments' / 'models.log',
             'formatter': 'verbose',
         },
-        # Handlers app controller
-        'controller_crud_file': {
-            'level': 'DEBUG',
-            'class': 'logging.FileHandler',
-            'filename': LOGS_DIR / 'controller' / 'crud.log',
-            'formatter': 'verbose',
-        },
-        'controller_views_file': {
-            'level': 'DEBUG',
-            'class': 'logging.FileHandler',
-            'filename': LOGS_DIR / 'controller' / 'views.log',
-            'formatter': 'verbose',
-        },
         'reports_views_file': {
             'level': 'DEBUG',
             'class': 'logging.FileHandler',
@@ -229,17 +219,6 @@ LOGGING = {
         # Loggers app appointments
         'appointments.views': {
             'handlers': ['appointments_views_file'],
-            'level': 'DEBUG',
-            'propagate': False,
-        },
-        # Loggers app controller
-        'controller.crud': {
-            'handlers': ['controller_crud_file'],
-            'level': 'DEBUG',
-            'propagate': False,
-        },
-        'controller.views': {
-            'handlers': ['controller_views_file'],
             'level': 'DEBUG',
             'propagate': False,
         },

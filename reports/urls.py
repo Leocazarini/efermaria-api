@@ -1,17 +1,9 @@
 from django.urls import path
-from .views import *
 
-
+from .api_views import AppointmentsReportView, InfirmaryStatsView, StatsView
 
 urlpatterns = [
-    path('records/student/', student_record, name='student_record'),
-    path('records/student/search/', student_search, name='student_search_record'),
-
-    path('records/employee/', employee_record, name='employee_record'),
-    path('records/employee/search/', employee_search, name='employee_search_record'),
-
-    path('search_reports/', reports, name='search_reports'),
-
-
-
+    path('appointments/', AppointmentsReportView.as_view(), name='report-appointments'),
+    path('stats/', StatsView.as_view(), name='report-stats'),
+    path('stats/infirmary/<str:infirmary_name>/', InfirmaryStatsView.as_view(), name='report-stats-infirmary'),
 ]
