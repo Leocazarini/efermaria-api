@@ -1,6 +1,6 @@
 from django.urls import path
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
-from .views import RegisterView, MeView, ChangePasswordView
+from .views import RegisterView, MeView, ChangePasswordView, PendingUsersView, ApproveUserView
 
 urlpatterns = [
     # Registro
@@ -17,4 +17,8 @@ urlpatterns = [
 
     # Troca de senha
     path('change-password/', ChangePasswordView.as_view(), name='auth-change-password'),
+
+    # Aprovação de usuários (apenas administradores)
+    path('users/pending/', PendingUsersView.as_view(), name='auth-users-pending'),
+    path('users/<int:pk>/approve/', ApproveUserView.as_view(), name='auth-user-approve'),
 ]

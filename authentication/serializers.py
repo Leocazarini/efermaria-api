@@ -30,6 +30,8 @@ class RegisterSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         validated_data.pop('password_confirm')
         user = User.objects.create_user(**validated_data)
+        user.is_active = False
+        user.save(update_fields=['is_active'])
         return user
 
 
@@ -38,6 +40,14 @@ class UserProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ['id', 'username', 'email', 'first_name', 'last_name', 'date_joined', 'last_login']
+        read_only_fields = fields
+
+
+class UserAdminSerializer(serializers.ModelSerializer):
+    """Serializer para listagem de usuários pelo administrador."""
+    class Meta:
+        model = User
+        fields = ['id', 'username', 'email', 'first_name', 'last_name', 'is_active', 'date_joined']
         read_only_fields = fields
 
 
