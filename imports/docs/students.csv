@@ -1,0 +1,6 @@
+registry,name,gender,birth_date,email,father_name,father_phone,mother_name,mother_phone,class_group_id
+STU001,Ana Lima,F,15/03/2010,ana.lima@escola.com,José Lima,(11)99001-0001,Maria Lima,(11)99001-0002,CG1
+STU002,Bruno Souza,M,22/07/2009,bruno.souza@escola.com,Paulo Souza,(11)99002-0001,Carla Souza,(11)99002-0002,CG1
+STU003,Bárbara Gonçalves,F,01/11/2011,,Roberto Gonçalves,(21)98003-0001,Fernanda Gonçalves,(21)98003-0002,CG2
+STU004,Carlos Mendes,M,30/05/2008,carlos.m@escola.com,,,Helena Mendes,(31)97004-0001,CG2
+STU005,Daniela Ferreira,F,14/02/2012,,,,,,

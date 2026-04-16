@@ -1,0 +1,6 @@
+registry,name,gender,birth_date,email,position,department_id
+EMP001,Carlos Souza,M,10/06/1985,carlos.souza@escola.com,Professor,D1
+EMP002,Lucia Santos,F,25/09/1990,lucia.santos@escola.com,Coordenadora,D1
+EMP003,Fernanda Lima,F,03/12/1978,fernanda.lima@escola.com,Diretora,D2
+EMP004,Roberto Alves,M,17/04/1982,,Auxiliar de Serviços,D2
+EMP005,Márcia Oliveira,F,08/08/1995,marcia.o@escola.com,Secretária,
