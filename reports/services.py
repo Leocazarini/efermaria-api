@@ -11,7 +11,9 @@ logger = logging.getLogger('reports.services')
 
 
 def _get_student_appointments(date_begin, date_end, infirmaries, search_term):
-    filters = Q(date__range=[date_begin, date_end], infirmary__in=infirmaries)
+    filters = Q(date__range=[date_begin, date_end])
+    if infirmaries:
+        filters &= Q(infirmary__in=infirmaries)
 
     if search_term:
         search_filters = (
@@ -35,7 +37,9 @@ def _get_student_appointments(date_begin, date_end, infirmaries, search_term):
 
 
 def _get_employee_appointments(date_begin, date_end, infirmaries, search_term):
-    filters = Q(date__range=[date_begin, date_end], infirmary__in=infirmaries)
+    filters = Q(date__range=[date_begin, date_end])
+    if infirmaries:
+        filters &= Q(infirmary__in=infirmaries)
 
     if search_term:
         search_filters = (
@@ -58,7 +62,9 @@ def _get_employee_appointments(date_begin, date_end, infirmaries, search_term):
 
 
 def _get_visitor_appointments(date_begin, date_end, infirmaries, search_term):
-    filters = Q(date__range=[date_begin, date_end], infirmary__in=infirmaries)
+    filters = Q(date__range=[date_begin, date_end])
+    if infirmaries:
+        filters &= Q(infirmary__in=infirmaries)
 
     if search_term:
         search_filters = (
@@ -80,6 +86,69 @@ def _get_visitor_appointments(date_begin, date_end, infirmaries, search_term):
     return VisitorAppointment.objects.filter(filters).select_related('visitor')
 
 
+def _student_to_dict(appt):
+    return {
+        'id': appt.id,
+        'patient_type': 'Estudante',
+        'patient_name': appt.student.name,
+        'additional_info_label': 'Turma',
+        'additional_info': appt.student.class_group.name if appt.student.class_group else '',
+        'age': appt.student.age,
+        'gender': appt.student.gender,
+        'date': appt.date,
+        'reason': appt.reason,
+        'treatment': appt.treatment,
+        'notes': appt.notes,
+        'infirmary': appt.infirmary,
+        'nurse': appt.nurse,
+        'current_class': appt.current_class,
+        'revaluation': appt.revaluation,
+        'contact_parents': appt.contact_parents,
+    }
+
+
+def _employee_to_dict(appt):
+    return {
+        'id': appt.id,
+        'patient_type': 'Funcionário',
+        'patient_name': appt.employee.name,
+        'additional_info_label': 'Departamento',
+        'additional_info': appt.employee.department.name if appt.employee.department else '',
+        'age': appt.employee.age,
+        'gender': appt.employee.gender,
+        'date': appt.date,
+        'reason': appt.reason,
+        'treatment': appt.treatment,
+        'notes': appt.notes,
+        'infirmary': appt.infirmary,
+        'nurse': appt.nurse,
+        'current_class': '',
+        'revaluation': appt.revaluation,
+        'contact_parents': False,
+    }
+
+
+def _visitor_to_dict(appt):
+    return {
+        'id': appt.id,
+        'patient_type': 'Visitante',
+        'patient_name': appt.visitor.name,
+        'additional_info_label': 'Relacionamento',
+        'additional_info': appt.visitor.relationship,
+        'age': appt.visitor.age,
+        'gender': appt.visitor.gender,
+        'date': appt.date,
+        'reason': appt.reason,
+        'treatment': appt.treatment,
+        'notes': appt.notes,
+        'infirmary': appt.infirmary,
+        'nurse': appt.nurse,
+        'current_class': '',
+        'revaluation': appt.revaluation,
+        'contact_parents': False,
+    }
+
+
 def get_all_appointments(date_begin, date_end, infirmaries, search_term):
     """
     Return a unified sorted list of dicts for all appointment types within the
@@ -91,67 +160,63 @@ def get_all_appointments(date_begin, date_end, infirmaries, search_term):
     employee_qs = _get_employee_appointments(date_begin, date_end, infirmaries, search_term)
     visitor_qs = _get_visitor_appointments(date_begin, date_end, infirmaries, search_term)
 
-    all_appointments = []
-
-    for appt in student_qs:
-        all_appointments.append({
-            'type': 'Estudante',
-            'name': appt.student.name,
-            'additional_info_label': 'Turma',
-            'additional_info': appt.student.class_group.name if appt.student.class_group else '',
-            'age': appt.student.age,
-            'gender': appt.student.gender,
-            'date': appt.date,
-            'reason': appt.reason,
-            'treatment': appt.treatment,
-            'notes': appt.notes,
-            'infirmary': appt.infirmary,
-            'nurse': appt.nurse,
-            'current_class': appt.current_class,
-            'revaluation': appt.revaluation,
-            'contact_parents': appt.contact_parents,
-        })
-
-    for appt in employee_qs:
-        all_appointments.append({
-            'type': 'Funcionário',
-            'name': appt.employee.name,
-            'additional_info_label': 'Departamento',
-            'additional_info': appt.employee.department.name if appt.employee.department else '',
-            'age': appt.employee.age,
-            'gender': appt.employee.gender,
-            'date': appt.date,
-            'reason': appt.reason,
-            'treatment': appt.treatment,
-            'notes': appt.notes,
-            'infirmary': appt.infirmary,
-            'nurse': appt.nurse,
-            'current_class': '',
-            'revaluation': appt.revaluation,
-            'contact_parents': '',
-        })
-
-    for appt in visitor_qs:
-        all_appointments.append({
-            'type': 'Visitante',
-            'name': appt.visitor.name,
-            'additional_info_label': 'Relacionamento',
-            'additional_info': appt.visitor.relationship,
-            'age': appt.visitor.age,
-            'gender': appt.visitor.gender,
-            'date': appt.date,
-            'reason': appt.reason,
-            'treatment': appt.treatment,
-            'notes': appt.notes,
-            'infirmary': appt.infirmary,
-            'nurse': appt.nurse,
-            'current_class': '',
-            'revaluation': appt.revaluation,
-            'contact_parents': '',
-        })
-
+    all_appointments = (
+        [_student_to_dict(a) for a in student_qs]
+        + [_employee_to_dict(a) for a in employee_qs]
+        + [_visitor_to_dict(a) for a in visitor_qs]
+    )
     all_appointments.sort(key=lambda x: x['date'], reverse=True)
     return all_appointments
+
+
+def get_recent_appointments(limit=3):
+    """Return the most recent appointments across all types."""
+    student_qs = (
+        StudentAppointment.objects
+        .select_related('student__class_group')
+        .order_by('-date')[:limit]
+    )
+    employee_qs = (
+        EmployeeAppointment.objects
+        .select_related('employee__department')
+        .order_by('-date')[:limit]
+    )
+    visitor_qs = (
+        VisitorAppointment.objects
+        .select_related('visitor')
+        .order_by('-date')[:limit]
+    )
+
+    combined = (
+        [_student_to_dict(a) for a in student_qs]
+        + [_employee_to_dict(a) for a in employee_qs]
+        + [_visitor_to_dict(a) for a in visitor_qs]
+    )
+    combined.sort(key=lambda x: x['date'], reverse=True)
+    return combined[:limit]
+
+
+def get_monthly_appointments_current_year():
+    """Return list of 12 dicts [{month: 1, count: N}, ...] for the current year."""
+    from collections import defaultdict
+    from django.db.models.functions import ExtractMonth
+    from django.db.models import Count as DjCount
+
+    current_year = timezone.now().year
+    monthly = defaultdict(int)
+
+    for model in (StudentAppointment, EmployeeAppointment, VisitorAppointment):
+        rows = (
+            model.objects
+            .filter(date__year=current_year)
+            .annotate(month=ExtractMonth('date'))
+            .values('month')
+            .annotate(count=DjCount('id'))
+        )
+        for row in rows:
+            monthly[row['month']] += row['count']
+
+    return [{'month': m, 'count': monthly.get(m, 0)} for m in range(1, 13)]
 
 
 def get_nurse_appointments_current_year():

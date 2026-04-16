@@ -4,7 +4,7 @@ from rest_framework import serializers
 class AppointmentQuerySerializer(serializers.Serializer):
     date_begin = serializers.DateField()
     date_end = serializers.DateField()
-    infirmaries = serializers.ListField(child=serializers.CharField(), min_length=1)
+    infirmaries = serializers.ListField(child=serializers.CharField(), required=False, default=[])
     search = serializers.CharField(required=False, allow_blank=True, default='')
 
     def validate(self, data):

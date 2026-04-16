@@ -147,13 +147,15 @@ class TestAppointmentsReport:
         )
         assert response.status_code == status.HTTP_400_BAD_REQUEST
 
-    def test_returns_400_when_missing_infirmaries(self, auth_client):
-        """GET sem infirmaries retorna 400."""
+    def test_returns_200_when_missing_infirmaries(self, auth_client, student_appointment):
+        """GET sem infirmaries retorna 200 com todos os atendimentos (sem filtro de enfermaria)."""
+        date_begin, date_end = _today_range()
         response = auth_client.get(
             f'{BASE}/appointments/',
-            {'date_begin': '2026-04-14', 'date_end': '2026-04-14'},
+            {'date_begin': date_begin, 'date_end': date_end},
         )
-        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        assert response.status_code == status.HTTP_200_OK
+        assert len(response.data) >= 1
 
     def test_search_term_filters_results(self, auth_client, student_appointment, employee_appointment):
         """GET com search filtra por termo nos resultados."""
@@ -189,6 +191,9 @@ class TestGlobalStats:
         assert 'total_current_year' in response.data
         assert 'total_today' in response.data
         assert 'nurses' in response.data
+        assert 'monthly_counts' in response.data
+        assert 'recent_appointments' in response.data
+        assert len(response.data['monthly_counts']) == 12
 
     def test_total_current_year_counts_appointments(self, auth_client, student_appointment, employee_appointment):
         """total_current_year conta todos os atendimentos do ano."""

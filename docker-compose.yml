@@ -30,11 +30,18 @@ services:
       - .:/app
 
   frontend:
-    image: node:20-alpine
-    working_dir: /app
+    build:
+      context: ./frontend
+      target: dev
     ports:
       - "3000:3000"
-    command: sh -c "echo 'Frontend container ready for Phase 4 setup' && sleep infinity"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    environment:
+      - VITE_API_TARGET=http://api:8000
+    depends_on:
+      - api
 
 volumes:
   postgres_data:

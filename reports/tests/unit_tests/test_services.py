@@ -110,19 +110,19 @@ class TestGetAllAppointments:
     def test_returns_student_appointment(self, student_appointment):
         start, end = self._date_range()
         results = get_all_appointments(start, end, ['Enfermaria A'], '')
-        types = [r['type'] for r in results]
+        types = [r['patient_type'] for r in results]
         assert 'Estudante' in types
 
     def test_returns_employee_appointment(self, employee_appointment):
         start, end = self._date_range()
         results = get_all_appointments(start, end, ['Enfermaria A'], '')
-        types = [r['type'] for r in results]
+        types = [r['patient_type'] for r in results]
         assert 'Funcionário' in types
 
     def test_returns_visitor_appointment(self, visitor_appointment):
         start, end = self._date_range()
         results = get_all_appointments(start, end, ['Enfermaria B'], '')
-        types = [r['type'] for r in results]
+        types = [r['patient_type'] for r in results]
         assert 'Visitante' in types
 
     def test_filters_by_infirmary(self, student_appointment, visitor_appointment):
