@@ -45,9 +45,17 @@ class UserProfileSerializer(serializers.ModelSerializer):
 
 class UserAdminSerializer(serializers.ModelSerializer):
     """Serializer para listagem de usuários pelo administrador."""
+    approved_at = serializers.SerializerMethodField()
+
+    def get_approved_at(self, obj):
+        try:
+            return obj.profile.approved_at
+        except Exception:
+            return None
+
     class Meta:
         model = User
-        fields = ['id', 'username', 'email', 'first_name', 'last_name', 'is_active', 'is_staff', 'date_joined', 'last_login']
+        fields = ['id', 'username', 'email', 'first_name', 'last_name', 'is_active', 'is_staff', 'date_joined', 'last_login', 'approved_at']
         read_only_fields = fields
 
 

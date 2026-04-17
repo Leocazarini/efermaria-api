@@ -19,6 +19,7 @@ export interface AdminUser {
   is_staff: boolean
   date_joined: string
   last_login: string | null
+  approved_at: string | null
 }
 
 export interface LoginCredentials {

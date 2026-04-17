@@ -1,9 +1,11 @@
 import logging
 from django.contrib.auth import get_user_model
+from django.utils import timezone
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated, AllowAny, IsAdminUser
+from .models import UserProfile
 from .serializers import RegisterSerializer, UserProfileSerializer, ChangePasswordSerializer, UserAdminSerializer, UserManageSerializer
 
 logger = logging.getLogger('authentication.views')
@@ -101,6 +103,7 @@ class ApproveUserView(APIView):
 
         user.is_active = True
         user.save(update_fields=['is_active'])
+        UserProfile.objects.update_or_create(user=user, defaults={'approved_at': timezone.now()})
         logger.info(f"Usuário '{user.username}' aprovado por '{request.user.username}'")
         return Response(
             {'detail': f"Usuário '{user.username}' aprovado com sucesso."},
@@ -130,6 +133,13 @@ class UserManageView(APIView):
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
         serializer.save()
+        # Se está sendo desativado, garante que approved_at esteja gravado
+        # (prova que o usuário já foi ativo em algum momento)
+        if request.data.get('is_active') is False:
+            profile, _ = UserProfile.objects.get_or_create(user=user)
+            if not profile.approved_at:
+                profile.approved_at = timezone.now()
+                profile.save(update_fields=['approved_at'])
         logger.info(f"Usuário '{user.username}' atualizado por '{request.user.username}': {request.data}")
         return Response(UserAdminSerializer(user).data, status=status.HTTP_200_OK)
 
