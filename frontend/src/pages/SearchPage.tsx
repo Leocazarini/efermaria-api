@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { AppLayout } from '../components/layout/AppLayout'
 import { PatientTypeSelector } from '../components/patients/PatientTypeSelector'
@@ -13,6 +13,13 @@ export function SearchPage() {
   const [patientType, setPatientType] = useState<PatientType>(state?.type ?? 'student')
   const [searchName, setSearchName] = useState('')
   const { data, isLoading, isError, isFetching } = usePatientSearch(patientType, searchName)
+  const inputRef = useRef<HTMLInputElement>(null)
+
+  useEffect(() => {
+    if (!isFetching) {
+      inputRef.current?.blur()
+    }
+  }, [isFetching])
 
   useEffect(() => {
     if (state?.type) setPatientType(state.type)
@@ -61,6 +68,7 @@ export function SearchPage() {
             )}
           </div>
           <input
+            ref={inputRef}
             type="text"
             placeholder="Digite o nome para buscar..."
             value={searchName}
