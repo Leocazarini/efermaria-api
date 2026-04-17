@@ -4,7 +4,7 @@ from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated, AllowAny, IsAdminUser
-from .serializers import RegisterSerializer, UserProfileSerializer, ChangePasswordSerializer, UserAdminSerializer
+from .serializers import RegisterSerializer, UserProfileSerializer, ChangePasswordSerializer, UserAdminSerializer, UserManageSerializer
 
 logger = logging.getLogger('authentication.views')
 
@@ -66,6 +66,16 @@ class ChangePasswordView(APIView):
         return Response({'detail': 'Senha alterada com sucesso.'}, status=status.HTTP_200_OK)
 
 
+class UsersListView(APIView):
+    """GET /api/auth/users/ — Lista todos os usuários (admin)."""
+    permission_classes = [IsAdminUser]
+
+    def get(self, request):
+        users = User.objects.all().order_by('is_active', 'date_joined')
+        serializer = UserAdminSerializer(users, many=True)
+        return Response(serializer.data)
+
+
 class PendingUsersView(APIView):
     """GET /api/auth/users/pending/ — Lista usuários aguardando aprovação."""
     permission_classes = [IsAdminUser]
@@ -96,3 +106,41 @@ class ApproveUserView(APIView):
             {'detail': f"Usuário '{user.username}' aprovado com sucesso."},
             status=status.HTTP_200_OK,
         )
+
+
+class UserManageView(APIView):
+    """PATCH /api/auth/users/<pk>/ — Atualiza is_active/is_staff. DELETE — remove usuário."""
+    permission_classes = [IsAdminUser]
+
+    def _get_user(self, pk):
+        try:
+            return User.objects.get(pk=pk)
+        except User.DoesNotExist:
+            return None
+
+    def patch(self, request, pk):
+        user = self._get_user(pk)
+        if not user:
+            return Response({'detail': 'Usuário não encontrado.'}, status=status.HTTP_404_NOT_FOUND)
+        if user == request.user:
+            return Response({'detail': 'Você não pode alterar seu próprio status.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        serializer = UserManageSerializer(user, data=request.data, partial=True)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        serializer.save()
+        logger.info(f"Usuário '{user.username}' atualizado por '{request.user.username}': {request.data}")
+        return Response(UserAdminSerializer(user).data, status=status.HTTP_200_OK)
+
+    def delete(self, request, pk):
+        user = self._get_user(pk)
+        if not user:
+            return Response({'detail': 'Usuário não encontrado.'}, status=status.HTTP_404_NOT_FOUND)
+        if user == request.user:
+            return Response({'detail': 'Você não pode excluir sua própria conta.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        username = user.username
+        user.delete()
+        logger.info(f"Usuário '{username}' excluído por '{request.user.username}'")
+        return Response(status=status.HTTP_204_NO_CONTENT)

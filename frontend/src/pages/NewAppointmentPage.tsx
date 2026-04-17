@@ -215,13 +215,13 @@ function ApptFields({ form, set }: {
   return (
     <Section title="Atendimento">
       <div className="grid grid-cols-2 gap-3">
-        <Input label="Enfermaria *" value={form.infirmary} onChange={e => set('infirmary', e.target.value)} onBlur={e => set('infirmary', toTitleCase(e.target.value))} required />
-        <Input label="Enfermeira *" value={form.nurse}     onChange={e => set('nurse', e.target.value)}     onBlur={e => set('nurse', toTitleCase(e.target.value))}     required />
+        <Input label="Enfermaria *" value={form.infirmary} onChange={e => set('infirmary', e.target.value)} onBlur={e => set('infirmary', toTitleCase(e.target.value))} maxLength={50} required />
+        <Input label="Enfermeira *" value={form.nurse}     onChange={e => set('nurse', e.target.value)}     onBlur={e => set('nurse', toTitleCase(e.target.value))}     maxLength={50} required />
       </div>
       <Input label="Data e hora *" type="datetime-local" value={form.date} onChange={e => set('date', e.target.value)} required />
-      <Textarea label="Motivo *"      rows={2} value={form.reason}    onChange={e => set('reason', e.target.value)}    onBlur={e => set('reason', toSentenceCase(e.target.value))}    placeholder="Descreva o motivo da visita..."      required />
-      <Textarea label="Tratamento *"  rows={3} value={form.treatment} onChange={e => set('treatment', e.target.value)} onBlur={e => set('treatment', toSentenceCase(e.target.value))} placeholder="Descreva o tratamento aplicado..."    required />
-      <Textarea label="Observações"   rows={2} value={form.notes}     onChange={e => set('notes', e.target.value)}     onBlur={e => set('notes', toSentenceCase(e.target.value))}     placeholder="Informações adicionais (opcional)" />
+      <Textarea label="Motivo *"      rows={2} value={form.reason}    onChange={e => set('reason', e.target.value)}    onBlur={e => set('reason', toSentenceCase(e.target.value))}    placeholder="Descreva o motivo da visita..."      maxLength={800}  required />
+      <Textarea label="Tratamento *"  rows={3} value={form.treatment} onChange={e => set('treatment', e.target.value)} onBlur={e => set('treatment', toSentenceCase(e.target.value))} placeholder="Descreva o tratamento aplicado..."    maxLength={2000} required />
+      <Textarea label="Observações"   rows={2} value={form.notes}     onChange={e => set('notes', e.target.value)}     onBlur={e => set('notes', toSentenceCase(e.target.value))}     placeholder="Informações adicionais (opcional)" maxLength={800} />
       <Toggle
         label="Necessita reavaliação"
         description="Marque se o paciente precisa de acompanhamento"
@@ -246,6 +246,7 @@ function ClinicalFields({ allergies, patientNotes, setAllergies, setPatientNotes
         onChange={e => setAllergies(e.target.value)}
         onBlur={e => setAllergies(toTitleCase(e.target.value))}
         placeholder="Ex: Dipirona, Penicilina..."
+        maxLength={500}
       />
       <Textarea
         label="Notas clínicas"
@@ -254,6 +255,7 @@ function ClinicalFields({ allergies, patientNotes, setAllergies, setPatientNotes
         onChange={e => setPatientNotes(e.target.value)}
         onBlur={e => setPatientNotes(toSentenceCase(e.target.value))}
         placeholder="Observações clínicas relevantes..."
+        maxLength={800}
       />
     </Section>
   )
@@ -316,6 +318,7 @@ function StudentForm({ patientId, patient, onSuccess }: {
           onChange={e => setCurrentClass(e.target.value)}
           onBlur={e => setCurrentClass(toTitleCase(e.target.value))}
           placeholder="Ex: 9A, 3B..."
+          maxLength={50}
         />
         <Toggle
           label="Contato com responsáveis"
@@ -470,10 +473,10 @@ function VisitorForm({ existingVisitor, onSuccess }: {
         /* New visitor — show full data entry form */
         <>
           <Section title="Dados do visitante">
-            <Input label="Nome *"   value={newVisitor.name}  onChange={e => setV('name', e.target.value)}  onBlur={e => setV('name', toTitleCase(e.target.value))}  required placeholder="Nome completo" />
-            <Input label="E-mail *" type="email" value={newVisitor.email} onChange={e => setV('email', e.target.value)} onBlur={e => setV('email', e.target.value.trim().toLowerCase())} required placeholder="email@exemplo.com" />
+            <Input label="Nome *"   value={newVisitor.name}  onChange={e => setV('name', e.target.value)}  onBlur={e => setV('name', toTitleCase(e.target.value))}  required placeholder="Nome completo" maxLength={100} />
+            <Input label="E-mail *" type="email" value={newVisitor.email} onChange={e => setV('email', e.target.value)} onBlur={e => setV('email', e.target.value.trim().toLowerCase())} required placeholder="email@exemplo.com" maxLength={254} />
             <div className="grid grid-cols-2 gap-3">
-              <Input label="Idade" type="number" min={0} value={newVisitor.age} onChange={e => setV('age', e.target.value)} placeholder="—" />
+              <Input label="Idade" type="number" min={0} max={120} value={newVisitor.age} onChange={e => setV('age', e.target.value)} placeholder="—" />
               <div className="flex flex-col gap-1.5">
                 <label className="text-sm font-medium text-slate-700">Gênero</label>
                 <select
@@ -494,6 +497,7 @@ function VisitorForm({ existingVisitor, onSuccess }: {
               onChange={e => setV('relationship', e.target.value)}
               onBlur={e => setV('relationship', toTitleCase(e.target.value))}
               placeholder="Ex: Responsável, Prestador de serviço..."
+              maxLength={50}
             />
           </Section>
 

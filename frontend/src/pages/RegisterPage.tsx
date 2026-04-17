@@ -27,6 +27,19 @@ export function RegisterPage() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
+    const username = form.username.trim().toLowerCase()
+    if (username.length < 3) {
+      setError('O usuário deve ter ao menos 3 caracteres.')
+      return
+    }
+    if (!/^[a-z0-9._-]+$/.test(username)) {
+      setError('O usuário só pode conter letras minúsculas, números, ponto, hífen e underscore.')
+      return
+    }
+    if (form.password.length < 8) {
+      setError('A senha deve ter ao menos 8 caracteres.')
+      return
+    }
     if (form.password !== form.password_confirm) {
       setError('As senhas não conferem.')
       return
@@ -128,6 +141,7 @@ export function RegisterPage() {
                     onChange={e => set('first_name', e.target.value)}
                     onBlur={e => set('first_name', toTitleCase(e.target.value))}
                     disabled={isSubmitting}
+                    maxLength={50}
                     required
                   />
                   <Input
@@ -137,6 +151,7 @@ export function RegisterPage() {
                     onChange={e => set('last_name', e.target.value)}
                     onBlur={e => set('last_name', toTitleCase(e.target.value))}
                     disabled={isSubmitting}
+                    maxLength={50}
                     required
                   />
                 </div>
@@ -149,6 +164,9 @@ export function RegisterPage() {
                   onChange={e => set('username', e.target.value)}
                   onBlur={e => set('username', e.target.value.trim().toLowerCase())}
                   disabled={isSubmitting}
+                  maxLength={150}
+                  minLength={3}
+                  hint="Apenas letras minúsculas, números, ponto, hífen e underscore."
                   required
                 />
 
@@ -161,6 +179,7 @@ export function RegisterPage() {
                   onChange={e => set('email', e.target.value)}
                   onBlur={e => set('email', e.target.value.trim().toLowerCase())}
                   disabled={isSubmitting}
+                  maxLength={254}
                   required
                 />
 
@@ -174,6 +193,8 @@ export function RegisterPage() {
                       value={form.password}
                       onChange={e => set('password', e.target.value)}
                       disabled={isSubmitting}
+                      minLength={8}
+                      maxLength={128}
                       required
                       className="w-full rounded-xl border border-slate-200 bg-white px-3.5 pr-11 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 transition-all focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-400 disabled:bg-slate-50"
                     />
@@ -204,6 +225,7 @@ export function RegisterPage() {
                   value={form.password_confirm}
                   onChange={e => set('password_confirm', e.target.value)}
                   disabled={isSubmitting}
+                  maxLength={128}
                   required
                 />
 

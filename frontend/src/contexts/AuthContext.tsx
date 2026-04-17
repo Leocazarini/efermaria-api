@@ -11,6 +11,7 @@ import type { LoginCredentials, UserProfile } from '../types/auth'
 interface AuthContextValue {
   user: UserProfile | null
   isAuthenticated: boolean
+  isAdmin: boolean
   isLoading: boolean
   login: (credentials: LoginCredentials) => Promise<void>
   logout: () => void
@@ -63,6 +64,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       value={{
         user,
         isAuthenticated: user !== null,
+        isAdmin: user?.is_staff === true,
         isLoading,
         login,
         logout,

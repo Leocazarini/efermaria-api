@@ -50,12 +50,25 @@ interface TextareaProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement
 
 export function Textarea({ label, error, className = '', id, ...props }: TextareaProps) {
   const inputId = id ?? label?.toLowerCase().replace(/\s+/g, '-')
+  const currentLen = typeof props.value === 'string' ? props.value.length : 0
+  const max = props.maxLength
+  const nearLimit = max !== undefined && currentLen >= max * 0.85
+
   return (
     <div className="flex flex-col gap-1.5">
-      {label && (
-        <label htmlFor={inputId} className="text-sm font-medium text-slate-700">
-          {label}
-        </label>
+      {(label || max !== undefined) && (
+        <div className="flex items-center justify-between">
+          {label && (
+            <label htmlFor={inputId} className="text-sm font-medium text-slate-700">
+              {label}
+            </label>
+          )}
+          {max !== undefined && (
+            <span className={`text-xs tabular-nums ${nearLimit ? 'text-amber-500 font-semibold' : 'text-slate-400'}`}>
+              {currentLen}/{max}
+            </span>
+          )}
+        </div>
       )}
       <textarea
         id={inputId}

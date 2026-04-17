@@ -1,8 +1,8 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { QueryClientProvider } from '@tanstack/react-query'
-import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import { AuthProvider } from './contexts/AuthContext'
 import { ProtectedRoute } from './components/layout/ProtectedRoute'
+import { AdminRoute } from './components/layout/AdminRoute'
 import { queryClient } from './lib/queryClient'
 
 import { LoginPage } from './pages/LoginPage'
@@ -12,6 +12,7 @@ import { SearchPage } from './pages/SearchPage'
 import { NewAppointmentPage } from './pages/NewAppointmentPage'
 import { PatientHistoryPage } from './pages/PatientHistoryPage'
 import { ReportsPage } from './pages/ReportsPage'
+import { UsersPage } from './pages/UsersPage'
 
 export default function App() {
   return (
@@ -69,11 +70,18 @@ export default function App() {
                 </ProtectedRoute>
               }
             />
+            <Route
+              path="/users"
+              element={
+                <AdminRoute>
+                  <UsersPage />
+                </AdminRoute>
+              }
+            />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </BrowserRouter>
       </AuthProvider>
-      <ReactQueryDevtools initialIsOpen={false} />
     </QueryClientProvider>
   )
 }

@@ -39,7 +39,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
     """Serializer para exibir o perfil do usuário autenticado (nunca expõe senha)."""
     class Meta:
         model = User
-        fields = ['id', 'username', 'email', 'first_name', 'last_name', 'date_joined', 'last_login']
+        fields = ['id', 'username', 'email', 'first_name', 'last_name', 'is_staff', 'date_joined', 'last_login']
         read_only_fields = fields
 
 
@@ -47,8 +47,15 @@ class UserAdminSerializer(serializers.ModelSerializer):
     """Serializer para listagem de usuários pelo administrador."""
     class Meta:
         model = User
-        fields = ['id', 'username', 'email', 'first_name', 'last_name', 'is_active', 'date_joined']
+        fields = ['id', 'username', 'email', 'first_name', 'last_name', 'is_active', 'is_staff', 'date_joined', 'last_login']
         read_only_fields = fields
+
+
+class UserManageSerializer(serializers.ModelSerializer):
+    """Serializer para PATCH de is_active / is_staff pelo administrador."""
+    class Meta:
+        model = User
+        fields = ['is_active', 'is_staff']
 
 
 class ChangePasswordSerializer(serializers.Serializer):

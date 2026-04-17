@@ -36,9 +36,9 @@ export function MonthlyChart({ data }: MonthlyChartProps) {
         const isCurrent = month === currentMonth
         const isPast = month < currentMonth
 
-        const barFill = isCurrent ? '#1bb0a0' : isPast ? '#a9efe3' : '#e8f7f5'
-        const labelFill = isCurrent ? '#138d83' : isPast ? '#6fe2d1' : '#cbd5e1'
-        const monthFill = isCurrent ? '#138d83' : '#94a3b8'
+        const barFill = isCurrent ? '#3b82f6' : isPast ? '#bfdbfe' : '#eff6ff'
+        const labelFill = isCurrent ? '#2563eb' : isPast ? '#93c5fd' : '#cbd5e1'
+        const monthFill = isCurrent ? '#2563eb' : '#94a3b8'
 
         return (
           <g key={month}>
