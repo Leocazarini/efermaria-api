@@ -19,7 +19,7 @@ export async function createStudentAppointment(
 }
 
 export async function getStudentAppointments(
-  studentId: number
+  studentId: string
 ): Promise<StudentAppointment[]> {
   const { data } = await api.get<StudentAppointment[]>(
     `/api/v1/appointments/student/${studentId}/`
@@ -38,7 +38,7 @@ export async function createEmployeeAppointment(
 }
 
 export async function getEmployeeAppointments(
-  employeeId: number
+  employeeId: string
 ): Promise<EmployeeAppointment[]> {
   const { data } = await api.get<EmployeeAppointment[]>(
     `/api/v1/appointments/employee/${employeeId}/`

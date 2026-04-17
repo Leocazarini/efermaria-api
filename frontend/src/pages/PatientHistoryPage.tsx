@@ -55,7 +55,7 @@ export function PatientHistoryPage() {
   const navigate = useNavigate()
 
   const patientType = type as PatientType
-  const patientId = Number(id)
+  const patientId = id ?? ''
   const patient = state?.patient
   const patientName: string = patient?.name ?? 'Paciente'
 

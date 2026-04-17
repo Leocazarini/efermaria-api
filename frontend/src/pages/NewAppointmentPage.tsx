@@ -264,7 +264,7 @@ function ClinicalFields({ allergies, patientNotes, setAllergies, setPatientNotes
 // ── Student form ──────────────────────────────────────────────────────────────
 
 function StudentForm({ patientId, patient, onSuccess }: {
-  patientId: number
+  patientId: string
   patient?: Student
   onSuccess: () => void
 }) {
@@ -344,7 +344,7 @@ function StudentForm({ patientId, patient, onSuccess }: {
 // ── Employee form ─────────────────────────────────────────────────────────────
 
 function EmployeeForm({ patientId, patient, onSuccess }: {
-  patientId: number
+  patientId: string
   patient?: Employee
   onSuccess: () => void
 }) {
@@ -540,7 +540,7 @@ export function NewAppointmentPage() {
   const isNewVisitor = !!useMatch('/appointments/visitor/new')
 
   const patientType: PatientType = isNewVisitor ? 'visitor' : (type as PatientType)
-  const patientId   = id ? Number(id) : 0
+  const patientId   = id ?? ''
   const patient     = state?.patient   // full patient object from search
 
   function onSuccess() {

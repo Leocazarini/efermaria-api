@@ -6,7 +6,7 @@ import {
 } from '../api/appointments'
 import type { PatientType } from '../types/patient'
 
-export function useAppointmentHistory(type: PatientType, id: number) {
+export function useAppointmentHistory(type: PatientType, id: string | number) {
   return useQuery({
     queryKey: ['history', type, id],
     queryFn: () => {

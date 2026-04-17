@@ -38,7 +38,7 @@ export interface VisitorAppointment extends AppointmentBase {
 }
 
 export interface StudentAppointmentCreate {
-  student_id: number
+  student_id: string
   infirmary: string
   nurse: string
   date: string
@@ -53,7 +53,7 @@ export interface StudentAppointmentCreate {
 }
 
 export interface EmployeeAppointmentCreate {
-  employee_id: number
+  employee_id: string
   infirmary: string
   nurse: string
   date: string

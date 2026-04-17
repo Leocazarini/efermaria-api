@@ -13,7 +13,7 @@ export interface StudentInfo {
 }
 
 export interface Student {
-  id: number
+  id: string
   name: string
   age: number
   gender: string
@@ -40,7 +40,7 @@ export interface EmployeeInfo {
 }
 
 export interface Employee {
-  id: number
+  id: string
   name: string
   age: number
   gender: string
