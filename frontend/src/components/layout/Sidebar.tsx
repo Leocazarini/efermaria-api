@@ -1,6 +1,8 @@
+import { useState } from 'react'
 import { NavLink } from 'react-router-dom'
 import { useAuth } from '../../contexts/AuthContext'
 import { toTitleCase } from '../../lib/format'
+import { LogoutConfirmModal } from '../ui/LogoutConfirmModal'
 
 const adminNavItem = {
   to: '/users',
@@ -74,6 +76,7 @@ const navItems: NavItem[] = [
 
 export function Sidebar() {
   const { user, logout, isAdmin } = useAuth()
+  const [showLogoutModal, setShowLogoutModal] = useState(false)
 
   return (
     <aside className="hidden lg:flex w-60 flex-col fixed inset-y-0 left-0 z-30 bg-white border-r border-slate-100">
@@ -145,7 +148,7 @@ export function Sidebar() {
       {/* Footer */}
       <div className="border-t border-slate-100 px-3 py-3">
         <button
-          onClick={logout}
+          onClick={() => setShowLogoutModal(true)}
           className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-500 hover:bg-red-50 hover:text-red-600 transition-all"
         >
           <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor">
@@ -154,6 +157,13 @@ export function Sidebar() {
           Sair
         </button>
       </div>
+
+      {showLogoutModal && (
+        <LogoutConfirmModal
+          onConfirm={logout}
+          onCancel={() => setShowLogoutModal(false)}
+        />
+      )}
     </aside>
   )
 }

@@ -7,25 +7,32 @@ import { Spinner } from '../components/ui/Spinner'
 import { usePatientSearch } from '../hooks/usePatientSearch'
 import type { PatientType, Student, Employee, Visitor } from '../types/patient'
 
+function isTouchDevice() {
+  return window.matchMedia('(pointer: coarse)').matches
+}
+
 export function SearchPage() {
   const { state } = useLocation()
   const navigate = useNavigate()
   const [patientType, setPatientType] = useState<PatientType>(state?.type ?? 'student')
   const [searchName, setSearchName] = useState('')
-  const { data, isLoading, isError, isFetching } = usePatientSearch(patientType, searchName)
+  const [debouncedName, setDebouncedName] = useState('')
+  const { data, isLoading, isError, isFetching } = usePatientSearch(patientType, debouncedName)
   const inputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
-    if (!isFetching) {
-      inputRef.current?.blur()
-    }
-  }, [isFetching])
+    const timer = setTimeout(() => {
+      setDebouncedName(searchName)
+      if (isTouchDevice()) inputRef.current?.blur()
+    }, 1000)
+    return () => clearTimeout(timer)
+  }, [searchName])
 
   useEffect(() => {
     if (state?.type) setPatientType(state.type)
   }, [state?.type])
 
-  const showResults = searchName.trim().length >= 2
+  const showResults = debouncedName.trim().length >= 2
 
   return (
     <AppLayout title="Buscar Paciente">
@@ -74,7 +81,6 @@ export function SearchPage() {
             value={searchName}
             onChange={(e) => setSearchName(e.target.value)}
             className="w-full rounded-xl border border-slate-200 bg-white py-3 pl-10 pr-4 text-sm text-slate-900 placeholder:text-slate-400 transition-all focus:border-brand-400 focus:outline-none focus:ring-2 focus:ring-brand-500"
-            autoFocus
           />
           {searchName && (
             <button

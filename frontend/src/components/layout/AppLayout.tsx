@@ -1,8 +1,10 @@
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../contexts/AuthContext'
 import { toTitleCase } from '../../lib/format'
 import { BottomNav } from './BottomNav'
 import { Sidebar } from './Sidebar'
+import { LogoutConfirmModal } from '../ui/LogoutConfirmModal'
 
 interface AppLayoutProps {
   title?: string
@@ -16,6 +18,7 @@ interface AppLayoutProps {
 export function AppLayout({ title, subtitle, back = false, action, children, noPadding = false }: AppLayoutProps) {
   const { user, logout } = useAuth()
   const navigate = useNavigate()
+  const [showLogoutModal, setShowLogoutModal] = useState(false)
 
   return (
     <div className="flex min-h-screen bg-slate-50">
@@ -62,7 +65,7 @@ export function AppLayout({ title, subtitle, back = false, action, children, noP
             {action ?? (
               !back && user && (
                 <button
-                  onClick={logout}
+                  onClick={() => setShowLogoutModal(true)}
                   className="lg:hidden flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition-colors"
                   title="Sair"
                 >
@@ -83,6 +86,13 @@ export function AppLayout({ title, subtitle, back = false, action, children, noP
 
       {/* Bottom nav — mobile only */}
       <BottomNav />
+
+      {showLogoutModal && (
+        <LogoutConfirmModal
+          onConfirm={logout}
+          onCancel={() => setShowLogoutModal(false)}
+        />
+      )}
     </div>
   )
 }
