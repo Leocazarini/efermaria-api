@@ -3,6 +3,7 @@ import { NavLink } from 'react-router-dom'
 import { useAuth } from '../../contexts/AuthContext'
 import { toTitleCase } from '../../lib/format'
 import { LogoutConfirmModal } from '../ui/LogoutConfirmModal'
+import { useRevaluations } from '../../hooks/useRevaluations'
 
 const adminNavItem = {
   to: '/users',
@@ -77,6 +78,8 @@ const navItems: NavItem[] = [
 export function Sidebar() {
   const { user, logout, isAdmin } = useAuth()
   const [showLogoutModal, setShowLogoutModal] = useState(false)
+  const { data: revaluations } = useRevaluations()
+  const revaluationCount = revaluations?.length ?? 0
 
   return (
     <aside className="hidden lg:flex w-60 flex-col fixed inset-y-0 left-0 z-30 bg-white border-r border-slate-100">
@@ -118,6 +121,34 @@ export function Sidebar() {
             )}
           </NavLink>
         ))}
+
+        {/* Revaluations */}
+        <NavLink
+          to="/revaluations"
+          className={({ isActive }) =>
+            `flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all ${
+              isActive
+                ? 'bg-brand-50 text-brand-700'
+                : 'text-slate-500 hover:bg-slate-50 hover:text-slate-800'
+            }`
+          }
+        >
+          {({ isActive }) => (
+            <>
+              <span className={isActive ? 'text-brand-600' : 'text-slate-400'}>
+                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                </svg>
+              </span>
+              <span className="flex-1">Reavaliações</span>
+              {revaluationCount > 0 && (
+                <span className="flex h-5 min-w-[20px] items-center justify-center rounded-full bg-amber-500 px-1.5 text-[10px] font-bold text-white">
+                  {revaluationCount}
+                </span>
+              )}
+            </>
+          )}
+        </NavLink>
 
         {isAdmin && (
           <>

@@ -9,6 +9,7 @@ import {
   createStudentAppointment,
   createEmployeeAppointment,
   createVisitorAppointment,
+  resolveRevaluation,
 } from '../api/appointments'
 import type { PatientType, Student, Employee, Visitor } from '../types/patient'
 import type {
@@ -531,6 +532,51 @@ function ErrorBox({ message }: { message: string }) {
   )
 }
 
+// ── Resolve revaluation modal ─────────────────────────────────────────────────
+
+function ResolveRevaluationModal({
+  onConfirm,
+  onSkip,
+  isLoading,
+}: {
+  onConfirm: () => void
+  onSkip: () => void
+  isLoading: boolean
+}) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" />
+      <div className="relative w-full max-w-sm rounded-2xl bg-white p-6 shadow-xl">
+        <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-amber-100">
+          <svg className="h-6 w-6 text-amber-600" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+          </svg>
+        </div>
+        <h2 className="text-base font-semibold text-slate-900">Reavaliação concluída?</h2>
+        <p className="mt-1 text-sm text-slate-500">
+          Deseja marcar a reavaliação deste paciente como concluída? Ele será removido da lista de pendências.
+        </p>
+        <div className="mt-5 flex gap-3">
+          <button
+            onClick={onSkip}
+            disabled={isLoading}
+            className="flex-1 rounded-xl border border-slate-200 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors disabled:opacity-50"
+          >
+            Não
+          </button>
+          <button
+            onClick={onConfirm}
+            disabled={isLoading}
+            className="flex-1 rounded-xl bg-brand-600 py-2.5 text-sm font-medium text-white hover:bg-brand-700 transition-colors disabled:opacity-50"
+          >
+            {isLoading ? 'Salvando…' : 'Sim, concluída'}
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 // ── Page ──────────────────────────────────────────────────────────────────────
 
 export function NewAppointmentPage() {
@@ -541,13 +587,37 @@ export function NewAppointmentPage() {
 
   const patientType: PatientType = isNewVisitor ? 'visitor' : (type as PatientType)
   const patientId   = id ?? ''
-  const patient     = state?.patient   // full patient object from search
+  const patient     = state?.patient
+  const fromRevaluation: { id: number; type: string } | undefined = state?.fromRevaluation
 
-  function onSuccess() {
+  const [showResolveModal, setShowResolveModal] = useState(false)
+  const [resolving, setResolving] = useState(false)
+
+  function navigateAfter() {
     if (isNewVisitor) {
       navigate('/search', { state: { type: 'visitor' } })
     } else {
       navigate(`/search/${type}/${id}/history`, { state: { patient } })
+    }
+  }
+
+  function onSuccess() {
+    if (fromRevaluation) {
+      setShowResolveModal(true)
+    } else {
+      navigateAfter()
+    }
+  }
+
+  async function handleResolveConfirm() {
+    if (!fromRevaluation) return
+    setResolving(true)
+    try {
+      await resolveRevaluation(fromRevaluation.type, fromRevaluation.id)
+      queryClient.invalidateQueries({ queryKey: ['revaluations'] })
+    } finally {
+      setResolving(false)
+      navigateAfter()
     }
   }
 
@@ -577,6 +647,14 @@ export function NewAppointmentPage() {
           />
         )}
       </div>
+
+      {showResolveModal && (
+        <ResolveRevaluationModal
+          onConfirm={handleResolveConfirm}
+          onSkip={navigateAfter}
+          isLoading={resolving}
+        />
+      )}
     </AppLayout>
   )
 }

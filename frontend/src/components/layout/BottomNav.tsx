@@ -1,5 +1,6 @@
 import { NavLink } from 'react-router-dom'
 import { useAuth } from '../../contexts/AuthContext'
+import { useRevaluations } from '../../hooks/useRevaluations'
 
 interface NavItem {
   to: string
@@ -41,6 +42,20 @@ const navItems: NavItem[] = [
     ),
   },
   {
+    to: '/revaluations',
+    label: 'Reav.',
+    icon: (
+      <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+      </svg>
+    ),
+    activeIcon: (
+      <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
+        <path fillRule="evenodd" d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12Zm13.36-1.814a.75.75 0 1 0-1.22-.872l-3.236 4.53L9.53 12.22a.75.75 0 0 0-1.06 1.06l2.25 2.25a.75.75 0 0 0 1.14-.094l3.75-5.25Z" clipRule="evenodd" />
+      </svg>
+    ),
+  },
+  {
     to: '/reports',
     label: 'Relatórios',
     icon: (
@@ -58,6 +73,8 @@ const navItems: NavItem[] = [
 
 export function BottomNav() {
   const { isAdmin } = useAuth()
+  const { data: revaluations } = useRevaluations()
+  const revaluationCount = revaluations?.length ?? 0
   const items = isAdmin
     ? [...navItems, {
         to: '/users',
@@ -87,8 +104,13 @@ export function BottomNav() {
           >
             {({ isActive }) => (
               <>
-                <div className={`flex h-8 w-12 items-center justify-center rounded-full transition-all duration-200 ${isActive ? 'bg-brand-100 text-brand-700' : 'text-slate-400'}`}>
+                <div className={`relative flex h-8 w-12 items-center justify-center rounded-full transition-all duration-200 ${isActive ? 'bg-brand-100 text-brand-700' : 'text-slate-400'}`}>
                   {isActive ? item.activeIcon : item.icon}
+                  {item.to === '/revaluations' && revaluationCount > 0 && (
+                    <span className="absolute -top-0.5 -right-0.5 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-amber-500 px-1 text-[9px] font-bold text-white">
+                      {revaluationCount}
+                    </span>
+                  )}
                 </div>
                 <span className={`text-[10px] font-semibold tracking-wide ${isActive ? 'text-brand-700' : 'text-slate-400'}`}>
                   {item.label}

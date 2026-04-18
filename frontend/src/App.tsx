@@ -13,6 +13,7 @@ import { NewAppointmentPage } from './pages/NewAppointmentPage'
 import { PatientHistoryPage } from './pages/PatientHistoryPage'
 import { ReportsPage } from './pages/ReportsPage'
 import { UsersPage } from './pages/UsersPage'
+import { RevaluationsPage } from './pages/RevaluationsPage'
 
 export default function App() {
   return (
@@ -67,6 +68,14 @@ export default function App() {
               element={
                 <ProtectedRoute>
                   <NewAppointmentPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/revaluations"
+              element={
+                <ProtectedRoute>
+                  <RevaluationsPage />
                 </ProtectedRoute>
               }
             />

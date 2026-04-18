@@ -7,6 +7,8 @@ from .api_views import (
     StudentAppointmentView,
     VisitorAppointmentListView,
     VisitorAppointmentView,
+    PendingRevaluationsView,
+    ResolveRevaluationView,
 )
 
 urlpatterns = [
@@ -21,4 +23,8 @@ urlpatterns = [
     # Visitor appointments
     path('visitor/', VisitorAppointmentView.as_view(), name='appointment-visitor-create'),
     path('visitor/<int:visitor_id>/', VisitorAppointmentListView.as_view(), name='appointment-visitor-list'),
+
+    # Revaluation management
+    path('revaluation/', PendingRevaluationsView.as_view(), name='appointment-revaluation-list'),
+    path('revaluation/<str:appointment_type>/<int:appointment_id>/done/', ResolveRevaluationView.as_view(), name='appointment-revaluation-resolve'),
 ]

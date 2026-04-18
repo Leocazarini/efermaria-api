@@ -127,6 +127,79 @@ def create_visitor_appointment(
     )
 
 
+def get_pending_revaluations():
+    """Return a unified list of all appointments where revaluation=True, across all patient types."""
+    results = []
+
+    for appt in StudentAppointment.objects.filter(revaluation=True).select_related('student').order_by('date'):
+        results.append({
+            'id': appt.id,
+            'appointment_type': 'student',
+            'patient_id': appt.student_id,
+            'patient_name': appt.student.name,
+            'infirmary': appt.infirmary,
+            'nurse': appt.nurse,
+            'date': appt.date.isoformat(),
+            'reason': appt.reason,
+            'notes': appt.notes,
+        })
+
+    for appt in EmployeeAppointment.objects.filter(revaluation=True).select_related('employee').order_by('date'):
+        results.append({
+            'id': appt.id,
+            'appointment_type': 'employee',
+            'patient_id': appt.employee_id,
+            'patient_name': appt.employee.name,
+            'infirmary': appt.infirmary,
+            'nurse': appt.nurse,
+            'date': appt.date.isoformat(),
+            'reason': appt.reason,
+            'notes': appt.notes,
+        })
+
+    for appt in VisitorAppointment.objects.filter(revaluation=True).select_related('visitor').order_by('date'):
+        results.append({
+            'id': appt.id,
+            'appointment_type': 'visitor',
+            'patient_id': appt.visitor_id,
+            'patient_name': appt.visitor.name,
+            'infirmary': appt.infirmary,
+            'nurse': appt.nurse,
+            'date': appt.date.isoformat(),
+            'reason': appt.reason,
+            'notes': appt.notes,
+            'visitor_data': {
+                'name': appt.visitor.name,
+                'age': appt.visitor.age,
+                'gender': appt.visitor.gender,
+                'email': appt.visitor.email,
+                'relationship': appt.visitor.relationship or '',
+                'allergies': appt.visitor.allergies or '',
+                'patient_notes': appt.visitor.patient_notes or '',
+            },
+        })
+
+    results.sort(key=lambda x: x['date'])
+    return results
+
+
+def resolve_revaluation(appointment_type, appointment_id):
+    """Set revaluation=False on the given appointment. Raises ValueError for invalid type."""
+    model_map = {
+        'student': StudentAppointment,
+        'employee': EmployeeAppointment,
+        'visitor': VisitorAppointment,
+    }
+    model = model_map.get(appointment_type)
+    if model is None:
+        raise ValueError(f'Tipo de atendimento inválido: {appointment_type}')
+
+    appointment = model.objects.get(pk=appointment_id)
+    appointment.revaluation = False
+    appointment.save(update_fields=['revaluation', 'updated_at'])
+    return appointment
+
+
 def get_appointments_by_patient(appointment_model, identifier_field, patient_id):
     """
     Return a list of dicts for all appointments of a given patient.

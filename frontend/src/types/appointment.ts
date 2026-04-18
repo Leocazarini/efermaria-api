@@ -111,6 +111,27 @@ export interface ReportAppointment {
   current_class: string
 }
 
+export interface PendingRevaluation {
+  id: number
+  appointment_type: 'student' | 'employee' | 'visitor'
+  patient_id: number
+  patient_name: string
+  infirmary: string
+  nurse: string
+  date: string
+  reason: string
+  notes: string | null
+  visitor_data?: {
+    name: string
+    age: number
+    gender: string
+    email: string
+    relationship: string
+    allergies: string
+    patient_notes: string
+  }
+}
+
 export interface ReportFilters {
   date_begin: string
   date_end: string

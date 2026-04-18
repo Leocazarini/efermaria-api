@@ -6,6 +6,7 @@ import type {
   StudentAppointmentCreate,
   EmployeeAppointmentCreate,
   VisitorAppointmentCreate,
+  PendingRevaluation,
 } from '../types/appointment'
 
 export async function createStudentAppointment(
@@ -63,4 +64,16 @@ export async function getVisitorAppointments(
     `/api/v1/appointments/visitor/${visitorId}/`
   )
   return data
+}
+
+export async function getPendingRevaluations(): Promise<PendingRevaluation[]> {
+  const { data } = await api.get<PendingRevaluation[]>('/api/v1/appointments/revaluation/')
+  return data
+}
+
+export async function resolveRevaluation(
+  appointmentType: string,
+  appointmentId: number
+): Promise<void> {
+  await api.patch(`/api/v1/appointments/revaluation/${appointmentType}/${appointmentId}/done/`)
 }

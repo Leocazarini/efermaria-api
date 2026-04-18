@@ -18,6 +18,8 @@ from .services import (
     create_student_appointment,
     create_visitor_appointment,
     get_appointments_by_patient,
+    get_pending_revaluations,
+    resolve_revaluation,
 )
 from .models import StudentAppointment, EmployeeAppointment, VisitorAppointment
 
@@ -145,3 +147,23 @@ class VisitorAppointmentListView(APIView):
             VisitorAppointment, 'visitor_id', visitor_id
         )
         return Response(appointments)
+
+
+# ──────────────────────────────────────────────
+# Revaluation management
+# ──────────────────────────────────────────────
+
+class PendingRevaluationsView(APIView):
+    def get(self, request):
+        return Response(get_pending_revaluations())
+
+
+class ResolveRevaluationView(APIView):
+    def patch(self, request, appointment_type, appointment_id):
+        try:
+            resolve_revaluation(appointment_type, appointment_id)
+        except ValueError as exc:
+            return Response({'detail': str(exc)}, status=status.HTTP_400_BAD_REQUEST)
+        except ObjectDoesNotExist:
+            return Response({'detail': 'Atendimento não encontrado.'}, status=status.HTTP_404_NOT_FOUND)
+        return Response(status=status.HTTP_204_NO_CONTENT)

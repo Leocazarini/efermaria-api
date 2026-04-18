@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { toTitleCase } from '../lib/format'
 import { useStats } from '../hooks/useStats'
+import { useRevaluations } from '../hooks/useRevaluations'
 import { AppLayout } from '../components/layout/AppLayout'
 import { Card } from '../components/ui/Card'
 import { Modal } from '../components/ui/Modal'
@@ -141,6 +142,7 @@ function RecentApptCard({ appt, onClick }: { appt: ReportAppointment; onClick: (
 export function DashboardPage() {
   const { user } = useAuth()
   const { data: stats, isLoading } = useStats()
+  const { data: revaluations } = useRevaluations()
   const navigate = useNavigate()
   const [selectedAppt, setSelectedAppt] = useState<ReportAppointment | null>(null)
 
@@ -156,6 +158,29 @@ export function DashboardPage() {
 
         {/* ── Left column ─────────────────────────────── */}
         <div className="lg:col-span-3 flex flex-col gap-5">
+
+          {/* Revaluation notification banner */}
+          {revaluations && revaluations.length > 0 && (
+            <button
+              onClick={() => navigate('/revaluations')}
+              className="flex items-center gap-3 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-left transition-all hover:border-amber-300 hover:bg-amber-100 active:scale-[0.98] w-full"
+            >
+              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-amber-100">
+                <svg className="h-5 w-5 text-amber-600" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z" />
+                </svg>
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-semibold text-amber-900">
+                  {revaluations.length} paciente{revaluations.length > 1 ? 's' : ''} aguardando reavaliação
+                </p>
+                <p className="text-xs text-amber-600">Toque para gerenciar as reavaliações pendentes</p>
+              </div>
+              <svg className="h-4 w-4 shrink-0 text-amber-400" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+              </svg>
+            </button>
+          )}
 
           {/* Hero banner */}
           <div className="rounded-2xl bg-brand-700 p-5 text-white shadow-float">
