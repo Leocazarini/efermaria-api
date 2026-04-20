@@ -48,3 +48,8 @@ export async function changePassword(payload: {
 }): Promise<void> {
   await api.post('/api/auth/change-password/', payload)
 }
+
+export async function getNurses(): Promise<string[]> {
+  const { data } = await api.get<string[]>('/api/auth/nurses/')
+  return data
+}

@@ -19,20 +19,12 @@ class RegisterSerializer(serializers.ModelSerializer):
         if data['password'] != data['password_confirm']:
             raise serializers.ValidationError({'password_confirm': 'As senhas não conferem.'})
 
-        # Valida usando as regras de senha nativas do Django
         try:
             password_validation.validate_password(data['password'])
         except DjangoValidationError as e:
             raise serializers.ValidationError({'password': list(e.messages)})
 
         return data
-
-    def create(self, validated_data):
-        validated_data.pop('password_confirm')
-        user = User.objects.create_user(**validated_data)
-        user.is_active = False
-        user.save(update_fields=['is_active'])
-        return user
 
 
 class UserProfileSerializer(serializers.ModelSerializer):

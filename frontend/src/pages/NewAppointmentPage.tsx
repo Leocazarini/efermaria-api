@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useLocation, useNavigate, useParams, useMatch } from 'react-router-dom'
 import { useMutation } from '@tanstack/react-query'
+import { useNurses } from '../hooks/useNurses'
 import { AppLayout } from '../components/layout/AppLayout'
 import { Button } from '../components/ui/Button'
 import { Input, Textarea } from '../components/ui/Input'
@@ -213,11 +214,25 @@ function ApptFields({ form, set }: {
   form: ApptFields
   set: (k: keyof ApptFields, v: string | boolean) => void
 }) {
+  const { data: nurses = [] } = useNurses()
   return (
     <Section title="Atendimento">
       <div className="grid grid-cols-2 gap-3">
         <Input label="Enfermaria *" value={form.infirmary} onChange={e => set('infirmary', e.target.value)} onBlur={e => set('infirmary', toTitleCase(e.target.value))} maxLength={50} required />
-        <Input label="Enfermeira *" value={form.nurse}     onChange={e => set('nurse', e.target.value)}     onBlur={e => set('nurse', toTitleCase(e.target.value))}     maxLength={50} required />
+        <div className="flex flex-col gap-1.5">
+          <label className="text-sm font-medium text-slate-700">Enfermeira *</label>
+          <select
+            value={form.nurse}
+            onChange={e => set('nurse', e.target.value)}
+            required
+            className="rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-900 focus:border-brand-400 focus:outline-none focus:ring-2 focus:ring-brand-500"
+          >
+            <option value="">Selecionar...</option>
+            {nurses.map(name => (
+              <option key={name} value={name}>{name}</option>
+            ))}
+          </select>
+        </div>
       </div>
       <Input label="Data e hora *" type="datetime-local" value={form.date} onChange={e => set('date', e.target.value)} required />
       <Textarea label="Motivo *"      rows={2} value={form.reason}    onChange={e => set('reason', e.target.value)}    onBlur={e => set('reason', toSentenceCase(e.target.value))}    placeholder="Descreva o motivo da visita..."      maxLength={800}  required />

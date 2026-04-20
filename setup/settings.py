@@ -165,7 +165,7 @@ DATABASES = {
 }
 
 def create_log_dirs():
-    app_dirs = ['patients', 'appointments', 'reports', 'imports']
+    app_dirs = ['patients', 'appointments', 'reports', 'imports', 'authentication']
     for app in app_dirs:
         dir_path = LOGS_DIR / app
         if not dir_path.exists():
@@ -231,6 +231,19 @@ LOGGING = {
             'filename': LOGS_DIR / 'imports' / 'api_views.log',
             'formatter': 'verbose',
         },
+        # Handlers app authentication
+        'authentication_services_file': {
+            'level': 'DEBUG',
+            'class': 'logging.FileHandler',
+            'filename': LOGS_DIR / 'authentication' / 'services.log',
+            'formatter': 'verbose',
+        },
+        'authentication_api_views_file': {
+            'level': 'DEBUG',
+            'class': 'logging.FileHandler',
+            'filename': LOGS_DIR / 'authentication' / 'api_views.log',
+            'formatter': 'verbose',
+        },
     },
     'loggers': {
         # Loggers app patients
@@ -257,6 +270,17 @@ LOGGING = {
         },
         'imports.api_views': {
             'handlers': ['imports_api_views_file'],
+            'level': 'DEBUG',
+            'propagate': False,
+        },
+        # Loggers app authentication
+        'authentication.services': {
+            'handlers': ['authentication_services_file'],
+            'level': 'DEBUG',
+            'propagate': False,
+        },
+        'authentication.api_views': {
+            'handlers': ['authentication_api_views_file'],
             'level': 'DEBUG',
             'propagate': False,
         },
