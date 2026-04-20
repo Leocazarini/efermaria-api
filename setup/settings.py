@@ -188,35 +188,42 @@ LOGGING = {
     },
     'handlers': {
         # Handlers app patients
-        'patients_views_file': {
+        'patients_api_views_file': {
             'level': 'DEBUG',
             'class': 'logging.FileHandler',
-            'filename': LOGS_DIR / 'patients' / 'views.log',
+            'filename': LOGS_DIR / 'patients' / 'api_views.log',
             'formatter': 'verbose',
         },
-        'patients_models_file': {
+        'patients_services_file': {
             'level': 'DEBUG',
             'class': 'logging.FileHandler',
-            'filename': LOGS_DIR / 'patients' / 'models.log',
+            'filename': LOGS_DIR / 'patients' / 'services.log',
             'formatter': 'verbose',
         },
         # Handlers app appointments
-        'appointments_views_file': {
+        'appointments_api_views_file': {
             'level': 'DEBUG',
             'class': 'logging.FileHandler',
-            'filename': LOGS_DIR / 'appointments' / 'views.log',
+            'filename': LOGS_DIR / 'appointments' / 'api_views.log',
             'formatter': 'verbose',
         },
-        'appointments_models_file': {
+        'appointments_services_file': {
             'level': 'DEBUG',
             'class': 'logging.FileHandler',
-            'filename': LOGS_DIR / 'appointments' / 'models.log',
+            'filename': LOGS_DIR / 'appointments' / 'services.log',
             'formatter': 'verbose',
         },
-        'reports_views_file': {
+        # Handlers app reports
+        'reports_api_views_file': {
             'level': 'DEBUG',
             'class': 'logging.FileHandler',
-            'filename': LOGS_DIR / 'reports' / 'views.log',
+            'filename': LOGS_DIR / 'reports' / 'api_views.log',
+            'formatter': 'verbose',
+        },
+        'reports_services_file': {
+            'level': 'DEBUG',
+            'class': 'logging.FileHandler',
+            'filename': LOGS_DIR / 'reports' / 'services.log',
             'formatter': 'verbose',
         },
         'imports_services_file': {
@@ -247,19 +254,35 @@ LOGGING = {
     },
     'loggers': {
         # Loggers app patients
-        'patients.views': {
-            'handlers': ['patients_views_file'],
+        'patients.api_views': {
+            'handlers': ['patients_api_views_file'],
+            'level': 'DEBUG',
+            'propagate': False,
+        },
+        'patients.services': {
+            'handlers': ['patients_services_file'],
             'level': 'DEBUG',
             'propagate': False,
         },
         # Loggers app appointments
-        'appointments.views': {
-            'handlers': ['appointments_views_file'],
+        'appointments.api_views': {
+            'handlers': ['appointments_api_views_file'],
             'level': 'DEBUG',
             'propagate': False,
         },
-        'reports.views': {
-            'handlers': ['reports_views_file'],
+        'appointments.services': {
+            'handlers': ['appointments_services_file'],
+            'level': 'DEBUG',
+            'propagate': False,
+        },
+        # Loggers app reports
+        'reports.api_views': {
+            'handlers': ['reports_api_views_file'],
+            'level': 'DEBUG',
+            'propagate': False,
+        },
+        'reports.services': {
+            'handlers': ['reports_services_file'],
             'level': 'DEBUG',
             'propagate': False,
         },
