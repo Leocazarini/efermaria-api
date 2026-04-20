@@ -1,83 +1,147 @@
 <div align="center">
-  <h1>🏥 School Infirmary System</h1>
-  <p><b>An advanced portfolio study on Modernization, Refactoring, and Architecture</b></p>
+  <h1>Sistema de Enfermaria Escolar</h1>
+  <p><b>Sistema de gestão de enfermarias escolares — do legado à arquitetura moderna</b></p>
 
   <img src="https://img.shields.io/badge/Python-3.12-blue?style=for-the-badge&logo=python" alt="Python Badge" />
   <img src="https://img.shields.io/badge/Django-5.0-092E20?style=for-the-badge&logo=django" alt="Django Badge" />
+  <img src="https://img.shields.io/badge/React-Vite-61DAFB?style=for-the-badge&logo=react" alt="React Badge" />
   <img src="https://img.shields.io/badge/Docker-Enabled-2496ED?style=for-the-badge&logo=docker" alt="Docker Badge" />
-  <img src="https://img.shields.io/badge/PostgreSQL-Ready-316192?style=for-the-badge&logo=postgresql" alt="Postgres Badge" />
+  <img src="https://img.shields.io/badge/PostgreSQL-15-316192?style=for-the-badge&logo=postgresql" alt="Postgres Badge" />
 </div>
 
 <br>
 
-## 📖 About The Project
+## Sobre o Projeto
 
-This project was initially developed as a bespoke, customized management solution for a specific institution. Originally built as a standard, monolithic Django application with HTML templates, it served its purpose by replacing spreadsheets and manual paper trails for four distinct school infirmaries. 
+Este sistema foi criado originalmente para suprir uma demanda real de uma empresa em que trabalhei há dois anos. Na época, quatro enfermarias escolares controlavam atendimentos manualmente, em planilhas e registros em papel — um processo lento, disperso e propenso a erros. O sistema nasceu como uma solução interna em Django monolítico com templates HTML, e resolveu o problema de forma funcional desde o primeiro dia de uso.
 
-**However, the goal has evolved.** This repository now serves as a **Case Study in Software Engineering**. The primary objective is to take a functional legacy monolithic system and refactor it into an industry-standard, scalable, and modern application.
+Com o tempo, o código envelheceu. Ele funcionava, mas carregava o peso de uma arquitetura sem camadas definidas, lógica espalhada nos `views`, credenciais hardcoded e ausência total de testes. A decisão foi refatorar do zero: manter o propósito original — gerenciar enfermarias escolares — mas reconstruir a base com as práticas e ferramentas que o projeto merecia.
 
-### The Transformation Journey:
-- **Generalization:** Stripped out all hardcoded institutional data, private IP bindings, and confidential secrets, transforming the codebase into an open-source template.
-- **Architectural Shift:** Moving away from classic "Fat Controllers" (views) into a **Domain-Driven Service Layer** (`services.py`).
-- **Headless API:** The server-rendered HTML UI is being completely dismantled and replaced by a pure RESTful API utilizing Django Rest Framework (DRF) and Swagger for documentation.
-- **Modern UI:** Introduction of a separate, Mobile-First frontend built with React/Next.js to consume the API securely.
-- **DevOps:** Fully containerized using Docker and Docker Compose (Postgres, Django API, Frontend).
-- **Test-Driven:** Introducing `pytest` for rigorous unit testing on the new service layers.
+O resultado é este repositório: uma aplicação moderna, com API REST documentada, frontend React mobile-first, autenticação JWT, testes automatizados e infraestrutura containerizada.
 
 ---
 
-## ✨ Core Features
+## Stack
 
-- **Patient Management:** Comprehensive CRUD operations for student and staff health records.
-- **Appointment Tracking:** Logging daily infirmary visits, symptom descriptions, and treatments provided.
-- **Medical Records:** Centralized view of a patient's complete history, including allergies, chronic conditions, and clinical observations.
-- **Analytics & Reporting:** Dynamic report generation across multiple infirmaries.
-
----
-
-## 🛠️ Stack Overview
-
-### 🔹 Infrastructure & DevOps
-- Docker & Docker Compose
-- PostgreSQL 15
-
-### 🔹 Backend API (Refactoring Phase)
-- Python 3.12
-- Django 5
-- Django Rest Framework (DRF)
-- drf-yasg (Swagger)
-- Pytest (TDD)
-
-### 🔹 Frontend (Upcoming Phase)
-- Node.js (React / Next.js)
-- JWT Authentication
-- TailwindCSS (Mobile-First approach)
+| Camada | Tecnologia |
+|---|---|
+| Backend | Python 3.12 + Django 5.0.7 + Django REST Framework |
+| Autenticação | JWT via `djangorestframework-simplejwt` |
+| Frontend | React 18 + Vite + TailwindCSS |
+| Banco de Dados | PostgreSQL 15 |
+| Infraestrutura | Docker + Docker Compose |
+| Testes | pytest + pytest-django |
+| Documentação de API | drf-spectacular (Swagger UI + ReDoc) |
 
 ---
 
-## 🚀 Getting Started (Local Development)
+## Funcionalidades
 
-Thanks to Docker, getting the project up and running is frictionless.
+### Gestão de Pacientes
 
-1. **Clone the repository:**
-   ```bash
-   git clone https://github.com/Leocazarini/efermaria-api.git
-   cd enfermaria-api/enfermaria-dev
-   ```
+O sistema suporta três tipos de pacientes:
 
-2. **Environment Variables:**
-   Create a `.env` file based on the example structure. Be sure to fill out the blank keys:
-   ```bash
-   cp .env.example .env
-   ```
+- **Alunos** — com matrícula, turma e ficha clínica (alergias e observações médicas)
+- **Funcionários** — com matrícula, departamento e ficha clínica
+- **Visitantes** — cadastrados diretamente no momento do atendimento, sem vínculo institucional
 
-3. **Spin up the containers:**
-   ```bash
-   docker-compose up --build
-   ```
+A busca de pacientes é feita por nome (com resultado paginado) ou diretamente por matrícula. A criação de alunos e funcionários ocorre exclusivamente via importação de arquivo CSV/XLSX, refletindo o fluxo real de sistemas institucionais.
 
-4. **Access the application:**
-   - The API server will be accessible natively at `http://localhost:8000/`
+### Registro de Atendimentos
+
+Cada atendimento registra: enfermaria, enfermeira responsável, data, motivo da visita, tratamento realizado e observações. O sistema suporta o campo de **reavaliação** — quando um paciente precisa de acompanhamento posterior, o atendimento é marcado com uma data de retorno e permanece em aberto até ser resolvido.
+
+A tela de **Reavaliações Pendentes** consolida todos os casos em aberto em uma única visualização, independente do tipo de paciente.
+
+### Histórico do Paciente
+
+O histórico completo de atendimentos de qualquer paciente é acessível a partir do seu perfil, incluindo data, motivo, tratamento e status de reavaliação de cada visita.
+
+### Relatórios e Estatísticas
+
+- **Relatório por período:** lista todos os atendimentos em um intervalo de datas, com filtros por enfermaria e busca por nome de paciente
+- **Estatísticas gerais:** total de atendimentos no ano e no dia atual, ranking de atendimentos por enfermeira
+- **Estatísticas por enfermaria:** visão isolada de uma unidade específica
+
+### Importação de Dados
+
+Administradores podem importar listas de alunos e funcionários via arquivos `.csv` ou `.xlsx`. O sistema detecta automaticamente o tipo de entidade pelo conteúdo do arquivo e processa registros em lote, criando ou atualizando conforme necessário.
+
+### Gestão de Usuários (Administradores)
+
+O fluxo de usuários é controlado: novos cadastros ficam pendentes de aprovação por um administrador antes de acessar o sistema. A tela de gestão permite aprovar, desativar, reativar e remover usuários, além de conceder ou revogar permissões de staff.
 
 ---
-> *Status: Development is ongoing. Currently executing Phase 1 & 2 (Dockerization, TDD, and Domain Services).*
+
+## Arquitetura
+
+O código segue uma arquitetura de camadas estrita, sem lógica de negócio fora do lugar:
+
+```
+api_views.py  →  serializers.py  →  services.py  →  models.py  →  DB
+```
+
+- **`models.py`** — apenas definição de campos e relações ORM
+- **`services.py`** — toda a lógica de negócio; nunca importa `Request` nem `Response`
+- **`serializers.py`** — validação e tradução entre JSON e objetos Python
+- **`api_views.py`** — orquestração HTTP pura: recebe, valida, chama service, responde
+
+---
+
+## Como Rodar
+
+### Com Docker (recomendado)
+
+```bash
+git clone https://github.com/Leocazarini/efermaria-api.git
+cd efermaria-api/enfermaria-dev
+cp .env.example .env   # preencher os valores
+docker-compose up --build
+```
+
+Serviços disponíveis:
+- API Django: `http://localhost:8000`
+- Frontend React: `http://localhost:3000`
+- Swagger UI: `http://localhost:8000/api/docs/`
+
+### Sem Docker (desenvolvimento local)
+
+```bash
+pip install -r requirements.txt
+cp .env.example .env
+python manage.py migrate
+python manage.py runserver
+```
+
+### Variáveis de Ambiente
+
+```env
+DJANGO_SECRET_KEY=...
+DJANGO_DEBUG=True
+DJANGO_ALLOWED_HOSTS=127.0.0.1,localhost
+DB_NAME=ENFERMARIA_DB
+DB_USER=postgres
+DB_PASSWORD=...
+DB_HOST=127.0.0.1
+DB_PORT=5432
+```
+
+---
+
+## Testes
+
+```bash
+pytest
+```
+
+Os testes cobrem serviços (unitários) e endpoints (integração), organizados por app em `<app>/tests/unit_tests/` e `<app>/tests/integration_tests/`.
+
+---
+
+## Documentação da API
+
+| URL | Descrição |
+|---|---|
+| `/api/docs/` | Swagger UI interativo |
+| `/api/redoc/` | ReDoc |
+| `/api/schema/` | Schema OpenAPI (JSON/YAML) |
