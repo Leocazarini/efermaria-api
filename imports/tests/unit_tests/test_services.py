@@ -1,8 +1,49 @@
 """
-Testes unitários para imports/services.py — ciclo TDD.
+Testes unitários de imports/services.py.
 
-Cada classe de teste cobre uma função/helper isolado do serviço.
-Nenhum request HTTP é feito aqui — testamos lógica pura.
+Contratos documentados aqui:
+
+  _calculate_age(birth_date_str)
+    → Recebe string no formato DD/MM/YYYY; retorna inteiro com a idade calculada.
+    → Retorna 0 para None, string vazia, espaços em branco ou formato inválido.
+
+  _parse_csv(file_obj)
+    → Lê arquivo CSV e retorna lista de dicts com os campos de cada linha de dados.
+    → Retorna [] para arquivo com apenas cabeçalho.
+    → Campos ausentes no CSV resultam em chaves ausentes ou com valor vazio no dict.
+    → Decodifica UTF-8 com suporte a acentuação.
+
+  _parse_xlsx(file_obj)
+    → Lê arquivo XLSX e retorna lista de dicts (mesmo contrato que _parse_csv).
+    → Células vazias são convertidas para string vazia (não None).
+    → Retorna [] para planilha sem linhas de dados.
+
+  _resolve_class_group(class_group_id)
+    → Busca ClassGroup pelo id; se não encontrado (ou None/''), retorna ClassGroup padrão
+      com id='NAO_INFORMADO', criado via get_or_create (nunca duplicado).
+
+  _resolve_department(department_id)
+    → Comportamento análogo a _resolve_class_group, para Department.
+
+  _upsert_student(row, errors, row_number)
+    → 'registry', 'name' e 'gender' são obrigatórios; ausência de qualquer um
+      registra erro em `errors` com {'row': row_number, 'reason': ...} e retorna 'error'.
+    → Se registry já existe: atualiza campos e retorna 'updated'.
+    → Se registry não existe: cria novo Student (id = registry) e retorna 'created'.
+    → 'birth_date' é opcional — quando presente, calcula e salva age.
+    → Campos opcionais (email, father_name, mother_name, etc.) são gravados quando fornecidos.
+
+  _upsert_employee(row, errors, row_number)
+    → Contrato análogo ao de _upsert_student, para Employee.
+    → Campo opcional 'position' é gravado quando fornecido.
+
+  import_from_file(file_obj, entity_type, user)
+    → Detecta formato pelo nome do arquivo (.csv ou .xlsx); ValueError para outros formatos.
+    → ValueError para entity_type fora de {'students', 'employees'}.
+    → Retorna ImportLog com: entity_type, total_rows, created_count, updated_count,
+      error_count, errors (lista de dicts), filename, imported_by.
+    → Linhas com erros não interrompem o processamento das demais.
+    → CSV/XLSX vazio (só cabeçalho) retorna ImportLog com todas as contagens zeradas.
 """
 import io
 import pytest
@@ -45,6 +86,7 @@ def _make_xlsx_bytes(headers: list, rows: list) -> bytes:
 # ──────────────────────────────────────────────────────────────────────────────
 
 class TestCalculateAge:
+    """_calculate_age: converte string DD/MM/YYYY em idade inteira; 0 para entradas inválidas."""
     def test_calculates_age_from_valid_date(self):
         """Calcula a idade a partir de uma data no formato DD/MM/YYYY."""
         age = _calculate_age('01/01/2000')
@@ -72,6 +114,7 @@ class TestCalculateAge:
 # ──────────────────────────────────────────────────────────────────────────────
 
 class TestParseCSV:
+    """_parse_csv: lê arquivo CSV e retorna lista de dicts; [] para arquivo sem linhas de dados."""
     def test_parses_all_columns(self):
         """Lê todas as colunas de um CSV simples."""
         csv_content = b"registry,name,gender\nSTU001,Ana Lima,F"
@@ -121,6 +164,7 @@ class TestParseCSV:
 # ──────────────────────────────────────────────────────────────────────────────
 
 class TestParseXLSX:
+    """_parse_xlsx: lê arquivo XLSX e retorna lista de dicts; células vazias viram string vazia."""
     def test_parses_all_columns(self):
         """Lê todas as colunas de um XLSX simples."""
         xlsx_bytes = _make_xlsx_bytes(
@@ -170,6 +214,7 @@ class TestParseXLSX:
 
 @pytest.mark.django_db
 class TestResolveClassGroup:
+    """_resolve_class_group: busca ClassGroup por id; retorna padrão 'NAO_INFORMADO' se ausente ou inválido."""
     def test_returns_existing_class_group(self):
         """Retorna o ClassGroup existente quando o id é encontrado."""
         cg = ClassGroup.objects.create(id='CG1', name='9A', segment='Fund', director='Dir')
@@ -205,6 +250,7 @@ class TestResolveClassGroup:
 
 @pytest.mark.django_db
 class TestResolveDepartment:
+    """_resolve_department: busca Department por id; retorna padrão 'NAO_INFORMADO' se ausente ou inválido."""
     def test_returns_existing_department(self):
         """Retorna o Department existente quando o id é encontrado."""
         dep = Department.objects.create(id='D1', name='TI', director='Dir')
@@ -240,6 +286,7 @@ class TestResolveDepartment:
 
 @pytest.mark.django_db
 class TestUpsertStudent:
+    """_upsert_student: cria ou atualiza Student por registry; registra erros sem interromper o lote."""
     def test_creates_new_student_with_required_fields(self):
         """Cria um novo aluno quando a matrícula não existe no banco."""
         errors = []
@@ -332,6 +379,7 @@ class TestUpsertStudent:
 
 @pytest.mark.django_db
 class TestUpsertEmployee:
+    """_upsert_employee: cria ou atualiza Employee por registry; contrato análogo ao de _upsert_student."""
     def test_creates_new_employee_with_required_fields(self):
         """Cria um novo funcionário quando a matrícula não existe."""
         errors = []
@@ -405,6 +453,7 @@ class TestUpsertEmployee:
 
 @pytest.mark.django_db
 class TestImportFromFile:
+    """import_from_file: orquestra parse + upsert e persiste o resultado em ImportLog."""
     @pytest.fixture
     def admin_user(self, db):
         from django.contrib.auth import get_user_model

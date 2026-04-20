@@ -5,7 +5,6 @@ User = get_user_model()
 
 
 class UserProfile(models.Model):
-    """Metadados de aprovação do usuário, separados do User nativo do Django."""
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
     approved_at = models.DateTimeField(null=True, blank=True)
 

@@ -1,11 +1,3 @@
-"""
-imports/services.py — Lógica de negócio para importação de pacientes.
-
-Regras:
-- Nunca importa Request, Response nem django.http.
-- Recebe dados Python, retorna dados Python.
-- Suporta .csv e .xlsx para entidades 'students' e 'employees'.
-"""
 import csv
 import io
 import logging
@@ -26,7 +18,6 @@ _DEFAULT_DEPARTMENT_ID  = 'NAO_INFORMADO'
 # ──────────────────────────────────────────────────────────────────────────────
 
 def _parse_csv(file_obj) -> list:
-    """Lê um arquivo CSV e retorna lista de dicts. Suporta bytes e texto."""
     content = file_obj.read()
     if isinstance(content, bytes):
         content = content.decode('utf-8')
@@ -35,7 +26,6 @@ def _parse_csv(file_obj) -> list:
 
 
 def _parse_xlsx(file_obj) -> list:
-    """Lê um arquivo .xlsx com openpyxl e retorna lista de dicts."""
     import openpyxl
     wb = openpyxl.load_workbook(file_obj)
     ws = wb.active
@@ -57,10 +47,6 @@ def _parse_xlsx(file_obj) -> list:
 # ──────────────────────────────────────────────────────────────────────────────
 
 def _calculate_age(birth_date_str) -> int:
-    """
-    Calcula a idade em anos a partir de uma string no formato DD/MM/YYYY.
-    Retorna 0 se a string for inválida, vazia ou None.
-    """
     if not birth_date_str or not str(birth_date_str).strip():
         return 0
     try:
@@ -75,10 +61,6 @@ def _calculate_age(birth_date_str) -> int:
 
 
 def _parse_birth_date(birth_date_str):
-    """
-    Converte string DD/MM/YYYY para datetime timezone-aware ou None.
-    Usado para gravar no campo DateTimeField do model (USE_TZ=True).
-    """
     if not birth_date_str or not str(birth_date_str).strip():
         return None
     try:
@@ -90,11 +72,6 @@ def _parse_birth_date(birth_date_str):
 
 
 def _resolve_class_group(class_group_id) -> ClassGroup:
-    """
-    Retorna o ClassGroup pelo id informado.
-    Se não encontrado (ou id vazio), retorna o ClassGroup padrão 'NAO_INFORMADO',
-    criando-o via get_or_create caso ainda não exista.
-    """
     cg_id = str(class_group_id).strip() if class_group_id else ''
     if cg_id:
         try:
@@ -116,10 +93,6 @@ def _resolve_class_group(class_group_id) -> ClassGroup:
 
 
 def _resolve_department(department_id) -> Department:
-    """
-    Retorna o Department pelo id informado.
-    Se não encontrado (ou id vazio), retorna o Department padrão 'NAO_INFORMADO'.
-    """
     dep_id = str(department_id).strip() if department_id else ''
     if dep_id:
         try:
@@ -144,14 +117,6 @@ def _resolve_department(department_id) -> Department:
 # ──────────────────────────────────────────────────────────────────────────────
 
 def _upsert_student(row: dict, errors: list, row_num: int) -> str:
-    """
-    Cria ou atualiza um Student com base no 'registry' (chave de upsert).
-
-    Retorna:
-      'created'  — novo registro criado
-      'updated'  — registro existente atualizado
-      'error'    — linha inválida; detalhes adicionados à lista errors
-    """
     registry = row.get('registry', '').strip()
     name     = row.get('name', '').strip()
     gender   = row.get('gender', '').strip()
@@ -200,14 +165,6 @@ def _upsert_student(row: dict, errors: list, row_num: int) -> str:
 
 
 def _upsert_employee(row: dict, errors: list, row_num: int) -> str:
-    """
-    Cria ou atualiza um Employee com base no 'registry' (chave de upsert).
-
-    Retorna:
-      'created'  — novo registro criado
-      'updated'  — registro existente atualizado
-      'error'    — linha inválida; detalhes adicionados à lista errors
-    """
     registry = row.get('registry', '').strip()
     name     = row.get('name', '').strip()
     gender   = row.get('gender', '').strip()
@@ -257,20 +214,6 @@ def _upsert_employee(row: dict, errors: list, row_num: int) -> str:
 # ──────────────────────────────────────────────────────────────────────────────
 
 def import_from_file(file, entity_type: str, user):
-    """
-    Importa pacientes (students ou employees) a partir de um arquivo CSV ou XLSX.
-
-    Parâmetros:
-      file         — arquivo enviado (UploadedFile do Django ou objeto file-like com .name)
-      entity_type  — 'students' ou 'employees'
-      user         — instância do User autenticado que disparou a importação
-
-    Retorna:
-      ImportLog com os resultados da importação.
-
-    Lança:
-      ValueError — entity_type inválido ou extensão de arquivo não suportada.
-    """
     from .models import ImportLog
 
     valid_entities = {ImportLog.ENTITY_STUDENTS, ImportLog.ENTITY_EMPLOYEES}

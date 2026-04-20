@@ -1,3 +1,31 @@
+"""
+Testes de integração — Jornadas de consulta de pacientes.
+
+Jornadas de usuário cobertas:
+
+  1. Busca de aluno por nome
+     Intenção: enfermeira digita o nome do aluno no campo de busca para iniciar
+     um atendimento ou consultar histórico.
+     Fluxo técnico: GET /api/v1/patients/students/?name=<termo>
+     → StudentSearchView → search_students_by_name() → SELECT icontains
+     → Retorna lista serializada; sem parâmetro 'name' retorna 400.
+
+  2. Consulta de aluno por ID ou matrícula
+     Intenção: após selecionar o aluno na busca, sistema carrega seus dados completos.
+     Fluxo técnico: GET /api/v1/patients/students/<id>/ ou /registry/<registry>/
+     → StudentDetailView → get_student_by_id() / get_student_by_registry()
+     → 404 se não encontrado.
+
+  3. Atualização de informações clínicas do aluno
+     Intenção: enfermeira registra alergias ou anotações clínicas durante o atendimento.
+     Fluxo técnico: PATCH /api/v1/patients/students/<id>/info/
+     → StudentInfoView → upsert_student_info() → UPDATE OR CREATE StudentInfo
+
+  4-6. Jornadas análogas para funcionários (Employee) e visitantes (Visitor).
+
+  Restrição comum: todos os endpoints exigem token JWT (IsAuthenticated).
+  Sem token → 401; token inválido → 401.
+"""
 import pytest
 from django.contrib.auth import get_user_model
 from rest_framework.test import APIClient
@@ -69,11 +97,13 @@ def visitor(db):
 
 
 # ──────────────────────────────────────────────
-# Autenticação
+# Jornada: proteção de rotas (sem token)
 # ──────────────────────────────────────────────
 
 @pytest.mark.django_db
 class TestPatientsAuth:
+    """Todos os endpoints de pacientes exigem JWT — sem token retorna 401."""
+
     def test_unauthenticated_student_search_returns_401(self, api_client):
         """Endpoints de pacientes requerem token JWT válido."""
         response = api_client.get(f'{BASE}/students/?name=ana')
@@ -91,11 +121,16 @@ class TestPatientsAuth:
 
 
 # ──────────────────────────────────────────────
-# Students — busca por nome
+# Jornada 1 — Busca de aluno por nome
 # ──────────────────────────────────────────────
 
 @pytest.mark.django_db
 class TestStudentSearch:
+    """
+    Enfermeira pesquisa aluno pelo nome para iniciar atendimento.
+    Fluxo: GET /students/?name= → search_students_by_name() → lista serializada.
+    """
+
     def test_search_returns_matching_students(self, auth_client, student):
         """Busca por nome retorna lista de alunos com nome correspondente."""
         response = auth_client.get(f'{BASE}/students/?name=Ana')
@@ -122,11 +157,16 @@ class TestStudentSearch:
 
 
 # ──────────────────────────────────────────────
-# Students — detalhe por ID
+# Jornada 2a — Consulta de aluno por ID
 # ──────────────────────────────────────────────
 
 @pytest.mark.django_db
 class TestStudentDetail:
+    """
+    Sistema carrega dados completos do aluno após seleção na busca.
+    Fluxo: GET /students/<id>/ → get_student_by_id() → 404 se não encontrado.
+    """
+
     def test_get_by_id_returns_student_data(self, auth_client, student):
         """GET por ID retorna os dados completos do aluno."""
         response = auth_client.get(f'{BASE}/students/{student.id}/')
@@ -141,11 +181,16 @@ class TestStudentDetail:
 
 
 # ──────────────────────────────────────────────
-# Students — detalhe por matrícula
+# Jornada 2b — Consulta de aluno por matrícula
 # ──────────────────────────────────────────────
 
 @pytest.mark.django_db
 class TestStudentByRegistry:
+    """
+    Sistema localiza aluno pela matrícula (código externo do ERP escolar).
+    Fluxo: GET /students/registry/<registry>/ → get_student_by_registry().
+    """
+
     def test_get_by_registry_returns_student_data(self, auth_client, student):
         """GET por matrícula retorna os dados do aluno correspondente."""
         response = auth_client.get(f'{BASE}/students/registry/{student.registry}/')
@@ -159,11 +204,16 @@ class TestStudentByRegistry:
 
 
 # ──────────────────────────────────────────────
-# Students — atualização de info clínica
+# Jornada 3 — Atualização de informações clínicas do aluno
 # ──────────────────────────────────────────────
 
 @pytest.mark.django_db
 class TestStudentInfoUpdate:
+    """
+    Enfermeira registra ou atualiza alergias e anotações clínicas durante o atendimento.
+    Fluxo: PATCH /students/<id>/info/ → upsert_student_info() → UPDATE OR CREATE StudentInfo.
+    """
+
     def test_patch_info_creates_and_returns_data(self, auth_client, student):
         """PATCH em /info/ cria ou atualiza informações clínicas do aluno."""
         payload = {'allergies': 'Dipirona', 'patient_notes': 'Histórico clínico'}
@@ -183,11 +233,16 @@ class TestStudentInfoUpdate:
 
 
 # ──────────────────────────────────────────────
-# Employees — busca por nome
+# Jornada 4 — Busca e consulta de funcionário
 # ──────────────────────────────────────────────
 
 @pytest.mark.django_db
 class TestEmployeeSearch:
+    """
+    Enfermeira pesquisa funcionário pelo nome para registrar atendimento.
+    Fluxo: GET /employees/?name= → search_employees_by_name().
+    """
+
     def test_search_returns_matching_employees(self, auth_client, employee):
         """Busca por nome retorna lista de funcionários com nome correspondente."""
         response = auth_client.get(f'{BASE}/employees/?name=Carlos')
@@ -207,12 +262,13 @@ class TestEmployeeSearch:
         assert response.data == []
 
 
-# ──────────────────────────────────────────────
-# Employees — detalhe por ID e matrícula
-# ──────────────────────────────────────────────
-
 @pytest.mark.django_db
 class TestEmployeeDetail:
+    """
+    Sistema carrega dados completos do funcionário após seleção na busca.
+    Fluxo: GET /employees/<id>/ ou /registry/<registry>/.
+    """
+
     def test_get_by_id_returns_employee_data(self, auth_client, employee):
         """GET por ID retorna os dados do funcionário."""
         response = auth_client.get(f'{BASE}/employees/{employee.id}/')
@@ -236,12 +292,13 @@ class TestEmployeeDetail:
         assert response.status_code == status.HTTP_404_NOT_FOUND
 
 
-# ──────────────────────────────────────────────
-# Employees — atualização de info clínica
-# ──────────────────────────────────────────────
-
 @pytest.mark.django_db
 class TestEmployeeInfoUpdate:
+    """
+    Enfermeira registra informações clínicas do funcionário.
+    Fluxo: PATCH /employees/<id>/info/ → upsert_employee_info().
+    """
+
     def test_patch_info_creates_and_returns_data(self, auth_client, employee):
         """PATCH em /info/ cria ou atualiza informações clínicas do funcionário."""
         payload = {'allergies': 'Penicilina', 'patient_notes': 'Diabético'}
@@ -260,11 +317,16 @@ class TestEmployeeInfoUpdate:
 
 
 # ──────────────────────────────────────────────
-# Visitors — busca e detalhe
+# Jornada 5 — Busca e consulta de visitante
 # ──────────────────────────────────────────────
 
 @pytest.mark.django_db
 class TestVisitorSearch:
+    """
+    Enfermeira pesquisa visitante pelo nome para consultar histórico.
+    Fluxo: GET /visitors/?name= → search_visitors_by_name().
+    """
+
     def test_search_returns_matching_visitors(self, auth_client, visitor):
         """Busca por nome retorna lista de visitantes com nome correspondente."""
         response = auth_client.get(f'{BASE}/visitors/?name=Maria')
@@ -286,6 +348,11 @@ class TestVisitorSearch:
 
 @pytest.mark.django_db
 class TestVisitorDetail:
+    """
+    Sistema carrega dados do visitante pelo ID.
+    Fluxo: GET /visitors/<id>/ → get_visitor_by_id().
+    """
+
     def test_get_by_id_returns_visitor_data(self, auth_client, visitor):
         """GET por ID retorna os dados do visitante."""
         response = auth_client.get(f'{BASE}/visitors/{visitor.id}/')

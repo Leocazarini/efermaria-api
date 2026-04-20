@@ -26,12 +26,6 @@ def create_student_appointment(
     allergies=None,
     patient_notes=None,
 ):
-    """
-    Create a StudentAppointment.
-    If allergies or patient_notes are provided, upserts StudentInfo first.
-    Raises ObjectDoesNotExist if the student does not exist.
-    Returns the created StudentAppointment instance.
-    """
     logger.debug(f"create_student_appointment: student_id={student_id}")
     student = get_student_by_id(student_id)
 
@@ -68,12 +62,6 @@ def create_employee_appointment(
     allergies=None,
     patient_notes=None,
 ):
-    """
-    Create an EmployeeAppointment.
-    If allergies or patient_notes are provided, upserts EmployeeInfo first.
-    Raises ObjectDoesNotExist if the employee does not exist.
-    Returns the created EmployeeAppointment instance.
-    """
     logger.debug(f"create_employee_appointment: employee_id={employee_id}")
     employee = get_employee_by_id(employee_id)
 
@@ -106,12 +94,6 @@ def create_visitor_appointment(
     notes=None,
     revaluation=False,
 ):
-    """
-    Create a VisitorAppointment.
-    Creates or updates the Visitor via upsert_visitor, then creates the appointment.
-    Raises ValueError if visitor_data has no email.
-    Returns the created VisitorAppointment instance.
-    """
     logger.debug(f"create_visitor_appointment: email={visitor_data.get('email')}")
     visitor = upsert_visitor(visitor_data)
 
@@ -128,7 +110,6 @@ def create_visitor_appointment(
 
 
 def get_pending_revaluations():
-    """Return a unified list of all appointments where revaluation=True, across all patient types."""
     results = []
 
     for appt in StudentAppointment.objects.filter(revaluation=True).select_related('student').order_by('date'):
@@ -184,7 +165,6 @@ def get_pending_revaluations():
 
 
 def resolve_revaluation(appointment_type, appointment_id):
-    """Set revaluation=False on the given appointment. Raises ValueError for invalid type."""
     model_map = {
         'student': StudentAppointment,
         'employee': EmployeeAppointment,
@@ -201,11 +181,6 @@ def resolve_revaluation(appointment_type, appointment_id):
 
 
 def get_appointments_by_patient(appointment_model, identifier_field, patient_id):
-    """
-    Return a list of dicts for all appointments of a given patient.
-    Uses a dynamic filter on identifier_field (e.g. 'student_id', 'employee_id').
-    Returns [] when there are no records.
-    """
     logger.debug(f"get_appointments_by_patient: model={appointment_model.__name__}, {identifier_field}={patient_id}")
     if patient_id is None:
         return []

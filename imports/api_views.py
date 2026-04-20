@@ -12,12 +12,6 @@ logger = logging.getLogger('imports.api_views')
 
 
 class FileImportView(APIView):
-    """
-    POST /api/v1/imports/file/
-
-    Importa alunos ou funcionários a partir de um arquivo CSV ou XLSX.
-    Requer is_staff=True (IsAdminUser).
-    """
     permission_classes = [IsAdminUser]
 
     def post(self, request):
@@ -54,12 +48,6 @@ class FileImportView(APIView):
 
 
 class ExternalSyncView(APIView):
-    """
-    POST /api/v1/imports/sync/
-
-    Reservado para integração futura com API externa (TOTVS RM ou similar).
-    Retorna 501 Not Implemented enquanto não implementado.
-    """
     permission_classes = [IsAdminUser]
 
     def post(self, request):

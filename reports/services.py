@@ -150,10 +150,6 @@ def _visitor_to_dict(appt):
 
 
 def get_all_appointments(date_begin, date_end, infirmaries, search_term):
-    """
-    Return a unified sorted list of dicts for all appointment types within the
-    given date range and infirmaries, optionally filtered by search_term.
-    """
     logger.debug(f"get_all_appointments: {date_begin} → {date_end}, infirmaries={infirmaries}")
 
     student_qs = _get_student_appointments(date_begin, date_end, infirmaries, search_term)
@@ -170,7 +166,6 @@ def get_all_appointments(date_begin, date_end, infirmaries, search_term):
 
 
 def get_recent_appointments(limit=3):
-    """Return the most recent appointments across all types."""
     student_qs = (
         StudentAppointment.objects
         .select_related('student__class_group')
@@ -197,7 +192,6 @@ def get_recent_appointments(limit=3):
 
 
 def get_monthly_appointments_current_year():
-    """Return list of 12 dicts [{month: 1, count: N}, ...] for the current year."""
     from collections import defaultdict
     from django.db.models.functions import ExtractMonth
     from django.db.models import Count as DjCount
@@ -220,10 +214,6 @@ def get_monthly_appointments_current_year():
 
 
 def get_nurse_appointments_current_year():
-    """
-    Return a list of {'nurse': str, 'count': int} for the current year,
-    combining all three appointment types.
-    """
     current_year = timezone.now().year
     nurse_counts = defaultdict(int)
 
@@ -235,7 +225,6 @@ def get_nurse_appointments_current_year():
 
 
 def get_total_appointments_current_year():
-    """Return the total number of appointments across all types for the current year."""
     current_year = timezone.now().year
     return sum(
         model.objects.filter(date__year=current_year).count()
@@ -244,7 +233,6 @@ def get_total_appointments_current_year():
 
 
 def get_total_appointments_today():
-    """Return the total number of appointments across all types for today."""
     today = timezone.now().date()
     return sum(
         model.objects.filter(date__date=today).count()
@@ -253,7 +241,6 @@ def get_total_appointments_today():
 
 
 def get_total_appointments_infirmary_current_year(infirmary):
-    """Return total appointments for a specific infirmary in the current year. Returns 0 if infirmary is falsy."""
     if not infirmary:
         return 0
     current_year = timezone.now().year
@@ -265,7 +252,6 @@ def get_total_appointments_infirmary_current_year(infirmary):
 
 
 def get_total_appointments_infirmary_today(infirmary):
-    """Return total appointments for a specific infirmary today. Returns 0 if infirmary is falsy."""
     if not infirmary:
         return 0
     today = timezone.now().date()

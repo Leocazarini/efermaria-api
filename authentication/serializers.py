@@ -6,7 +6,6 @@ User = get_user_model()
 
 
 class RegisterSerializer(serializers.ModelSerializer):
-    """Serializer para criação de novos usuários."""
     password = serializers.CharField(write_only=True, min_length=8)
     password_confirm = serializers.CharField(write_only=True)
 
@@ -28,7 +27,6 @@ class RegisterSerializer(serializers.ModelSerializer):
 
 
 class UserProfileSerializer(serializers.ModelSerializer):
-    """Serializer para exibir o perfil do usuário autenticado (nunca expõe senha)."""
     class Meta:
         model = User
         fields = ['id', 'username', 'email', 'first_name', 'last_name', 'is_staff', 'date_joined', 'last_login']
@@ -36,7 +34,6 @@ class UserProfileSerializer(serializers.ModelSerializer):
 
 
 class UserAdminSerializer(serializers.ModelSerializer):
-    """Serializer para listagem de usuários pelo administrador."""
     approved_at = serializers.SerializerMethodField()
 
     def get_approved_at(self, obj):
@@ -52,14 +49,12 @@ class UserAdminSerializer(serializers.ModelSerializer):
 
 
 class UserManageSerializer(serializers.ModelSerializer):
-    """Serializer para PATCH de is_active / is_staff pelo administrador."""
     class Meta:
         model = User
         fields = ['is_active', 'is_staff']
 
 
 class ChangePasswordSerializer(serializers.Serializer):
-    """Serializer para troca de senha autenticada."""
     old_password = serializers.CharField(write_only=True)
     new_password = serializers.CharField(write_only=True, min_length=8)
     new_password_confirm = serializers.CharField(write_only=True)

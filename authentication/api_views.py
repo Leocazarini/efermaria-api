@@ -16,7 +16,6 @@ logger = logging.getLogger('authentication.api_views')
 
 
 class RegisterView(APIView):
-    """POST /api/auth/register/ — Criação de novo usuário (inativo até aprovação)."""
     permission_classes = [AllowAny]
 
     def post(self, request):
@@ -45,7 +44,6 @@ class RegisterView(APIView):
 
 
 class MeView(APIView):
-    """GET /api/auth/me/ — Perfil do usuário autenticado."""
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
@@ -54,7 +52,6 @@ class MeView(APIView):
 
 
 class ChangePasswordView(APIView):
-    """POST /api/auth/change-password/ — Troca de senha."""
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
@@ -74,7 +71,6 @@ class ChangePasswordView(APIView):
 
 
 class NursesView(APIView):
-    """GET /api/auth/nurses/ — Primeiros nomes dos usuários ativos, para seleção no atendimento."""
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
@@ -82,7 +78,6 @@ class NursesView(APIView):
 
 
 class UsersListView(APIView):
-    """GET /api/auth/users/ — Lista todos os usuários (admin)."""
     permission_classes = [IsAdminUser]
 
     def get(self, request):
@@ -92,7 +87,6 @@ class UsersListView(APIView):
 
 
 class PendingUsersView(APIView):
-    """GET /api/auth/users/pending/ — Lista usuários aguardando aprovação."""
     permission_classes = [IsAdminUser]
 
     def get(self, request):
@@ -102,7 +96,6 @@ class PendingUsersView(APIView):
 
 
 class ApproveUserView(APIView):
-    """POST /api/auth/users/<pk>/approve/ — Aprova um usuário pendente."""
     permission_classes = [IsAdminUser]
 
     def post(self, request, pk):
@@ -116,7 +109,6 @@ class ApproveUserView(APIView):
 
 
 class UserManageView(APIView):
-    """PATCH /api/auth/users/<pk>/ — Atualiza is_active/is_staff. DELETE — remove usuário."""
     permission_classes = [IsAdminUser]
 
     def patch(self, request, pk):

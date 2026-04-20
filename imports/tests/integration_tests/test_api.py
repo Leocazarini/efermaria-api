@@ -1,9 +1,36 @@
 """
-Testes de integração para os endpoints do módulo imports/.
+Testes de integração — Jornadas de importação de pacientes.
 
-Cobre os dois endpoints:
-  POST /api/v1/imports/file/  — importação via arquivo (CSV/XLSX)
-  POST /api/v1/imports/sync/  — stub de sincronização externa (501)
+Jornadas de usuário cobertas:
+
+  1. Importação de alunos via CSV
+     Intenção: administrador do sistema carrega a planilha de alunos exportada do
+     sistema escolar (ERP) para popular ou atualizar o cadastro da enfermaria.
+     Fluxo técnico: POST /api/v1/imports/file/ (multipart: file + entity_type='students')
+     → FileImportView → import_from_file() → _parse_csv() → _upsert_student() × N
+     → Retorna resumo com total_rows, created, updated, errors e import_id.
+     → 400 se file ou entity_type ausentes; 400 se entity_type inválido; 400 se extensão inválida.
+     → Segunda importação com mesmo registry atualiza o aluno existente (upsert).
+
+  2. Importação de alunos via XLSX
+     Intenção: mesma jornada da importação CSV, mas com arquivo no formato Excel.
+     Fluxo técnico: mesmo que acima, com _parse_xlsx() no lugar de _parse_csv().
+     → Alunos são gravados no banco; retorna 200 com resumo.
+
+  3. Importação de funcionários via CSV/XLSX
+     Intenção: administrador importa o quadro de funcionários para que enfermeiras
+     possam registrar atendimentos de colaboradores da escola.
+     Fluxo técnico: POST /api/v1/imports/file/ (entity_type='employees')
+     → import_from_file() → _upsert_employee() × N
+     → Retorna resumo análogo ao de alunos.
+
+  4. Sincronização externa (stub)
+     Intenção: endpoint reservado para futura integração com sistemas externos (TOTVS RM).
+     Fluxo técnico: POST /api/v1/imports/sync/
+     → ExternalSyncView → retorna 501 Not Implemented com campo 'detail'.
+
+  Restrição comum: todos os endpoints exigem token JWT + is_staff=True.
+  Sem token → 401; usuário sem is_staff → 403.
 """
 import io
 import pytest
@@ -83,6 +110,10 @@ def admin_client(db):
 
 @pytest.mark.django_db
 class TestFileImportAuth:
+    """
+    Endpoint de importação é restrito a administradores — JWT + is_staff obrigatórios.
+    Fluxo: POST /file/ sem token → 401; com token de usuário comum → 403.
+    """
     def test_unauthenticated_returns_401(self, api_client):
         """Requisição sem token retorna 401."""
         csv_file = SimpleUploadedFile("s.csv", b"registry,name,gender\n")
@@ -110,6 +141,11 @@ class TestFileImportAuth:
 
 @pytest.mark.django_db
 class TestFileImportStudentsCSV:
+    """
+    Administrador importa planilha de alunos em CSV para popular o cadastro da enfermaria.
+    Fluxo: POST /file/ (multipart) → import_from_file() → _parse_csv() → _upsert_student() × N
+    → 200 com resumo {entity_type, total_rows, created, updated, errors, import_id}.
+    """
     def test_valid_csv_returns_200_and_import_summary(self, admin_client):
         """CSV válido retorna 200 com o resumo da importação."""
         csv_content = (
@@ -238,6 +274,11 @@ class TestFileImportStudentsCSV:
 
 @pytest.mark.django_db
 class TestFileImportStudentsXLSX:
+    """
+    Administrador importa planilha de alunos em formato Excel (.xlsx).
+    Fluxo: POST /file/ (multipart) → import_from_file() → _parse_xlsx() → _upsert_student() × N
+    → 200 com resumo; alunos persistidos no banco.
+    """
     def test_valid_xlsx_returns_200(self, admin_client):
         """XLSX válido é aceito e retorna 200 com o resumo."""
         xlsx_bytes = _make_xlsx_bytes(
@@ -277,6 +318,11 @@ class TestFileImportStudentsXLSX:
 
 @pytest.mark.django_db
 class TestFileImportEmployees:
+    """
+    Administrador importa quadro de funcionários para que a enfermaria possa registrar atendimentos.
+    Fluxo: POST /file/ (entity_type='employees') → import_from_file() → _upsert_employee() × N
+    → 200 com resumo; funcionários persistidos no banco.
+    """
     def test_valid_csv_creates_employees(self, admin_client):
         """CSV de funcionários válido cria registros no banco."""
         csv_content = (
@@ -327,6 +373,11 @@ class TestFileImportEmployees:
 
 @pytest.mark.django_db
 class TestExternalSync:
+    """
+    Endpoint reservado para futura integração com sistemas externos (ex: TOTVS RM).
+    Fluxo: POST /sync/ → ExternalSyncView → retorna 501 Not Implemented com campo 'detail'.
+    Restrição: JWT + is_staff obrigatórios (sem token → 401; sem staff → 403).
+    """
     def test_admin_post_returns_501(self, admin_client):
         """POST em /sync/ retorna 501 Not Implemented."""
         response = admin_client.post(

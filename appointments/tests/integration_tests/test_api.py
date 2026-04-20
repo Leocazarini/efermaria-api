@@ -1,3 +1,33 @@
+"""
+Testes de integração — Jornadas de registro de atendimentos.
+
+Jornadas de usuário cobertas:
+
+  1. Registro de atendimento de aluno
+     Intenção: enfermeira registra o atendimento de um aluno que veio à enfermaria.
+     Fluxo técnico: POST /api/v1/appointments/student/
+     → StudentAppointmentCreateView → create_student_appointment()
+     → Cria StudentAppointment; opcionalmente upserta StudentInfo se dados clínicos fornecidos.
+     → 201 em sucesso; 404 se aluno não existe; 400 se campo obrigatório ausente.
+
+  2. Consulta de histórico do aluno
+     Intenção: enfermeira consulta todos os atendimentos anteriores de um aluno.
+     Fluxo técnico: GET /api/v1/appointments/student/<student_id>/
+     → get_appointments_by_patient(StudentAppointment, 'student_id', ...)
+     → Lista vazia se o aluno não tiver histórico.
+
+  3. Registro e consulta de atendimento de funcionário
+     Intenção: análoga à do aluno, para colaboradores da escola.
+     Fluxo técnico: POST /employee/ e GET /employee/<employee_id>/
+
+  4. Registro e consulta de atendimento de visitante
+     Intenção: visitante externo (pai, mãe, parceiro) é atendido na enfermaria.
+     Fluxo técnico: POST /visitor/ → create_visitor_appointment()
+     → upsert_visitor() cria ou reutiliza o Visitor pelo email antes do atendimento.
+     → Dois POSTs com o mesmo email geram dois atendimentos mas um único Visitor.
+
+  Restrição comum: todos os endpoints exigem token JWT (IsAuthenticated).
+"""
 import pytest
 from django.contrib.auth import get_user_model
 from django.utils import timezone
@@ -118,11 +148,13 @@ def visitor_appointment_payload():
 
 
 # ──────────────────────────────────────────────
-# Autenticação
+# Proteção de rotas
 # ──────────────────────────────────────────────
 
 @pytest.mark.django_db
 class TestAppointmentsAuth:
+    """Todos os endpoints de atendimento exigem JWT — sem token retorna 401."""
+
     def test_unauthenticated_post_student_returns_401(self, api_client):
         """Criação de atendimento requer token JWT válido."""
         response = api_client.post(f'{BASE}/student/', {}, format='json')
@@ -135,11 +167,16 @@ class TestAppointmentsAuth:
 
 
 # ──────────────────────────────────────────────
-# StudentAppointment — criação
+# Jornada 1 — Registro de atendimento de aluno
 # ──────────────────────────────────────────────
 
 @pytest.mark.django_db
 class TestCreateStudentAppointment:
+    """
+    Enfermeira registra atendimento de aluno na enfermaria.
+    Fluxo: POST /student/ → create_student_appointment() → StudentAppointment criado.
+    """
+
     def test_create_with_valid_payload_returns_201(self, auth_client, student_appointment_payload):
         """POST com payload válido cria atendimento e retorna 201."""
         response = auth_client.post(f'{BASE}/student/', student_appointment_payload, format='json')
@@ -147,19 +184,19 @@ class TestCreateStudentAppointment:
         assert response.data['reason'] == 'Dor de cabeça'
 
     def test_create_with_nonexistent_student_returns_404(self, auth_client, student_appointment_payload):
-        """POST com student_id inexistente retorna 404."""
+        """POST com student_id inexistente retorna 404 — get_student_by_id() falha antes de criar."""
         student_appointment_payload['student_id'] = 'ID_INVALIDO'
         response = auth_client.post(f'{BASE}/student/', student_appointment_payload, format='json')
         assert response.status_code == status.HTTP_404_NOT_FOUND
 
     def test_create_missing_required_field_returns_400(self, auth_client, student_appointment_payload):
-        """POST sem campo obrigatório retorna 400."""
+        """POST sem campo obrigatório retorna 400 — serializer valida antes de chamar o service."""
         del student_appointment_payload['reason']
         response = auth_client.post(f'{BASE}/student/', student_appointment_payload, format='json')
         assert response.status_code == status.HTTP_400_BAD_REQUEST
 
     def test_create_with_clinical_info_upserts_student_info(self, auth_client, student, student_appointment_payload):
-        """POST com allergies atualiza StudentInfo junto ao atendimento."""
+        """POST com allergies atualiza StudentInfo no mesmo request."""
         student_appointment_payload['allergies'] = 'Dipirona'
         student_appointment_payload['patient_notes'] = 'Observação'
         response = auth_client.post(f'{BASE}/student/', student_appointment_payload, format='json')
@@ -169,11 +206,16 @@ class TestCreateStudentAppointment:
 
 
 # ──────────────────────────────────────────────
-# StudentAppointment — consulta
+# Jornada 2 — Consulta de histórico do aluno
 # ──────────────────────────────────────────────
 
 @pytest.mark.django_db
 class TestGetStudentAppointments:
+    """
+    Enfermeira consulta todos os atendimentos anteriores de um aluno.
+    Fluxo: GET /student/<student_id>/ → get_appointments_by_patient().
+    """
+
     def test_get_appointments_returns_list(self, auth_client, student, student_appointment_payload):
         """GET retorna lista de atendimentos do aluno."""
         auth_client.post(f'{BASE}/student/', student_appointment_payload, format='json')
@@ -182,18 +224,23 @@ class TestGetStudentAppointments:
         assert len(response.data) == 1
 
     def test_get_appointments_returns_empty_list_for_no_history(self, auth_client, student):
-        """GET retorna lista vazia para aluno sem atendimentos."""
+        """GET retorna lista vazia para aluno sem atendimentos — não retorna 404."""
         response = auth_client.get(f'{BASE}/student/{student.id}/')
         assert response.status_code == status.HTTP_200_OK
         assert response.data == []
 
 
 # ──────────────────────────────────────────────
-# EmployeeAppointment — criação
+# Jornada 3 — Registro e consulta de atendimento de funcionário
 # ──────────────────────────────────────────────
 
 @pytest.mark.django_db
 class TestCreateEmployeeAppointment:
+    """
+    Enfermeira registra atendimento de funcionário.
+    Fluxo: POST /employee/ → create_employee_appointment().
+    """
+
     def test_create_with_valid_payload_returns_201(self, auth_client, employee_appointment_payload):
         """POST com payload válido cria atendimento de funcionário e retorna 201."""
         response = auth_client.post(f'{BASE}/employee/', employee_appointment_payload, format='json')
@@ -213,12 +260,13 @@ class TestCreateEmployeeAppointment:
         assert response.status_code == status.HTTP_400_BAD_REQUEST
 
 
-# ──────────────────────────────────────────────
-# EmployeeAppointment — consulta
-# ──────────────────────────────────────────────
-
 @pytest.mark.django_db
 class TestGetEmployeeAppointments:
+    """
+    Enfermeira consulta histórico de atendimentos de um funcionário.
+    Fluxo: GET /employee/<employee_id>/ → get_appointments_by_patient().
+    """
+
     def test_get_appointments_returns_list(self, auth_client, employee, employee_appointment_payload):
         """GET retorna lista de atendimentos do funcionário."""
         auth_client.post(f'{BASE}/employee/', employee_appointment_payload, format='json')
@@ -234,11 +282,17 @@ class TestGetEmployeeAppointments:
 
 
 # ──────────────────────────────────────────────
-# VisitorAppointment — criação
+# Jornada 4 — Registro e consulta de atendimento de visitante
 # ──────────────────────────────────────────────
 
 @pytest.mark.django_db
 class TestCreateVisitorAppointment:
+    """
+    Enfermeira registra atendimento de visitante externo (pai, mãe, parceiro).
+    Fluxo: POST /visitor/ → create_visitor_appointment() → upsert_visitor() + VisitorAppointment.
+    Email é a chave de upsert: visitante já cadastrado é reutilizado.
+    """
+
     def test_create_with_valid_payload_returns_201(self, auth_client, visitor_appointment_payload):
         """POST com payload válido cria atendimento de visitante e retorna 201."""
         response = auth_client.post(f'{BASE}/visitor/', visitor_appointment_payload, format='json')
@@ -246,7 +300,7 @@ class TestCreateVisitorAppointment:
         assert response.data['reason'] == 'Tontura'
 
     def test_create_missing_visitor_email_returns_400(self, auth_client, visitor_appointment_payload):
-        """POST com visitante sem e-mail retorna 400."""
+        """POST com visitante sem e-mail retorna 400 — upsert_visitor() exige email."""
         del visitor_appointment_payload['visitor']['email']
         response = auth_client.post(f'{BASE}/visitor/', visitor_appointment_payload, format='json')
         assert response.status_code == status.HTTP_400_BAD_REQUEST
@@ -258,19 +312,20 @@ class TestCreateVisitorAppointment:
         assert response.status_code == status.HTTP_400_BAD_REQUEST
 
     def test_create_upserts_visitor_on_repeated_email(self, auth_client, visitor_appointment_payload):
-        """Dois POSTs com o mesmo e-mail reutilizam o mesmo Visitor."""
+        """Dois POSTs com o mesmo email geram dois atendimentos mas apenas um Visitor no banco."""
         auth_client.post(f'{BASE}/visitor/', visitor_appointment_payload, format='json')
         response = auth_client.post(f'{BASE}/visitor/', visitor_appointment_payload, format='json')
         assert response.status_code == status.HTTP_201_CREATED
         assert Visitor.objects.filter(email='joao@example.com').count() == 1
 
 
-# ──────────────────────────────────────────────
-# VisitorAppointment — consulta
-# ──────────────────────────────────────────────
-
 @pytest.mark.django_db
 class TestGetVisitorAppointments:
+    """
+    Enfermeira consulta histórico de atendimentos de um visitante.
+    Fluxo: GET /visitor/<visitor_id>/ → get_appointments_by_patient().
+    """
+
     def test_get_appointments_returns_list(self, auth_client, visitor, visitor_appointment_payload):
         """GET retorna lista de atendimentos do visitante."""
         auth_client.post(f'{BASE}/visitor/', visitor_appointment_payload, format='json')
